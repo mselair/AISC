@@ -1,7 +1,7 @@
 from XML_parsing.myXML import myXML, DELIMITER, ET
 
 
-def parse_xml_CVAT(path):
+def parser_xml_CVAT(path):
     class EmptyClass:
         def __init__(self, version=1.0, file_id='SPARSE_MIX', file_path=''):
             self._version = version
@@ -10,6 +10,12 @@ def parse_xml_CVAT(path):
 
     PseudoParent = EmptyClass(version=1.0, file_id=path.split(DELIMITER)[-1].split('.')[0], file_path=path)
     return myXML_Annotations.init_from_existing(PseudoParent, ET.parse(path).getroot())
+
+
+
+
+
+
 
 ##### VERSION #####
 class myXML_Id(myXML):

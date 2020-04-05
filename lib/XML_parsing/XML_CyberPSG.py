@@ -1,6 +1,6 @@
 from XML_parsing.myXML import myXML, DELIMITER, ET
 
-def parse_xml_CyberPSG(path):
+def parser_xml_CyberPSG(path):
     class EmptyClass:
         def __init__(self, version=1.1, file_id='SPARSE_MIX', file_path=''):
             self._version = version

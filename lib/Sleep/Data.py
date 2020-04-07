@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from dateutil import tz
 
-def parse_CyberPSGAnnotationXML(path):
+def parse_CyberPSG_Annotations_xml(path):
     Annotations = parser_xml_CyberPSG(path)
 
     annotationTypes = {}
@@ -158,4 +158,24 @@ def create_dayIndexes(dfAnnotations, startTime_key='start', endTime_key='end', h
                 (dfAnnotations[startTime_key] >= day_thr0) & (dfAnnotations[startTime_key] < day_thr1), 'day'] = idx
 
     return dfAnnotations
+
+
+def standardize_CyberPSG_Annotations(dfAnnotations,
+                                   annotationIdKey='annotationTypeId',
+                                   annotationIdDict=None,
+                                   time_format='%Y-%m-%dT%H:%M:%S.%f',
+                                   startTime_key='startTimeUtc',
+                                   endTime_key='endTimeUtc',
+                                   hour_cut=16,
+                                   min_cut=00
+                                   ):
+    dfAnnotations = standardize_annotationId(dfAnnotations, annotationIdKey, annotationIdDict)
+    dfAnnotations = standardize_timeAnnotations(dfAnnotations, startTime_key, endTime_key, time_format)
+    dfAnnotations = create_dayIndexes(dfAnnotations, hour=hour_cut, minute=min_cut)
+
+    return dfAnnotations
+
+
+
+
 

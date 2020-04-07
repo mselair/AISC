@@ -1,2 +1,0 @@
-test of GIthub and jira integration in commits.
-second test, Vaclav.

@@ -1,4 +1,5 @@
 from FeatureExtractor import SleepSpectralFeatureExtractor
+import numpy as np
 
 fs = 500 # vzorkovacka
 segm_size = 30 # delka segmentu ze ktereho extrahujes featury v sekundach

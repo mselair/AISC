@@ -1,3 +1,10 @@
+# Copyright 2020-present, Mayo Clinic Department of Neurology
+# All rights reserved.
+#
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
+
+
 import numpy as np
 import multiprocessing
 from functools import partial
@@ -181,7 +188,8 @@ class SleepSpectralFeatureExtractor:
     def process_signal(self, x=None, fs=None, segm_size=None, fbands=None):
         features = []
         msg = []
-        b, a = signal.butter(4, 50/(0.5*fs), 'lp', analog=False)
+        cutoff = np.array(fbands).max()
+        b, a = signal.butter(4, cutoff/(0.5*fs), 'lp', analog=False)
 
 
         xbuffered = self.buffer(x, fs, segm_size)
@@ -190,7 +198,6 @@ class SleepSpectralFeatureExtractor:
         msg = msg + ['DATA_RATE']
         xbuffered[np.isnan(xbuffered)] = 0
         xbuffered = xbuffered - xbuffered.mean(axis=1).reshape((-1, 1))
-
         xbuffered = signal.filtfilt(b, a, xbuffered, axis=1)
 
 

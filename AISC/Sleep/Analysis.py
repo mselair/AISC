@@ -11,8 +11,7 @@ import datetime
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from dateutil import tz
-
-from Sleep.Data import parse_CyberPSG_Annotations_xml, standardize_CyberPSG_Annotations, standardize_timeAnnotations, standardize_annotationId, create_dayIndexes
+from AISC.Sleep.Data import parse_CyberPSG_Annotations_xml, standardize_CyberPSG_Annotations, standardize_timeAnnotations, standardize_annotationId, create_dayIndexes
 
 def tile_annotations(dfAnnotations, dur_threshold):
     if not isinstance(dfAnnotations, pd.DataFrame):
@@ -228,6 +227,20 @@ def get_number_of_sleep_stages(df, tags ='REM', delay=30):
 def is_sleep_complete(df, awake_tag='AWAKE'):
     return df.iloc[0].annotation == awake_tag == df.iloc[-1].annotation
 
+def get_rem_latency(df, rem_tag='REM', awake_tag='AWAKE'):
+    first_rem_start = df.loc[df.annotation == rem_tag].reset_index(drop=True).iloc[0].start
+    fall_asleep_start = get_fell_asleep_time(df)
+    df_rem = df.loc[(df.end <= first_rem_start) & (df.annotation == awake_tag)].reset_index(drop=True)
+    if df_rem.__len__() == 0:
+        last_awake_end = fall_asleep_start
+    else:
+        last_awake_end = df_rem.iloc[-1].end
+
+    return {'last_awake': first_rem_start - last_awake_end, 'fall_asleep': first_rem_start - fall_asleep_start}
+
+
+
+
 def score_night(df, plot=False):
     df = filter_by_key(df, 'annotation', 'Arrousal')
     df = merge_neighbouring(df)
@@ -240,6 +253,8 @@ def score_night(df, plot=False):
 
     n_complete_sleep_cycles = get_number_of_sleep_stages(sleep_df, tags='REM', delay=30)
     n_awakenings = get_number_of_awakenings(sleep_df)
+    rem_latency = get_rem_latency(df)
+
 
     n1_sleep_time = get_time_by_key(sleep_df, 'N1')
     n2_sleep_time = get_time_by_key(sleep_df, 'N2')
@@ -247,12 +262,16 @@ def score_night(df, plot=False):
     rem_sleep_time = get_time_by_key(sleep_df, 'REM')
     awake_sleep_time = get_time_by_key(sleep_df, 'AWAKE')
 
-    if plot == True: hypnogram(df)
-    plt.stem([fell_asleep_time, awakening_time], [7, 7], linefmt='r', markerfmt='or', basefmt='r')
+
+    if plot == True:
+        hypnogram(df)
+        plt.stem([fell_asleep_time, awakening_time], [7, 7], linefmt='r', markerfmt='or', basefmt='r')
 
     return {
         'sleep_complete': sleep_complete,
         'fell_asleep_time': fell_asleep_time,
+        'rem_latency_fell_asleep': rem_latency['fall_asleep'],
+        'rem_latency_last_awake': rem_latency['last_awake'],
         'awakening_time': awakening_time,
         'n_complete_sleep_cycles': n_complete_sleep_cycles,
         'n_awakenings': n_awakenings,
@@ -304,8 +323,12 @@ def hypnogram(orig_df):
 
     x_start = np.array(df['start'])
     x_end = np.array(df['end'])
-    for k, time_sample in enumerate(x_start): x_start[k] = time_sample.to_pydatetime()
-    for k, time_sample in enumerate(x_end): x_end[k] = time_sample.to_pydatetime()
+    try:
+        for k, time_sample in enumerate(x_start): x_start[k] = time_sample.to_pydatetime()
+        for k, time_sample in enumerate(x_end): x_end[k] = time_sample.to_pydatetime()
+    except:
+        for k, time_sample in enumerate(x_start): x_start[k] = time_sample
+        for k, time_sample in enumerate(x_end): x_end[k] = time_sample
 
     plt.figure(dpi=200)
     plt.xlim(x_start[0], x_end[-1])
@@ -400,13 +423,32 @@ def print_score(score):
     hours, remainder = divmod(total_sleep_time, 3600)
     minutes, seconds = divmod(remainder, 60)
 
+    rem_lat1 = score['rem_latency_last_awake'].seconds
+    hrs_rem1, remainder = divmod(rem_lat1, 3600)
+    mins_rem1, secs_rem1 = divmod(remainder, 60)
+
+    rem_lat2 = score['rem_latency_fell_asleep'].seconds
+    hrs_rem2, remainder = divmod(rem_lat2, 3600)
+    mins_rem2, secs_rem2 = divmod(remainder, 60)
+
+    non_REM = score['n3_sleep_time'] + score['n2_sleep_time'] + score['n1_sleep_time']
 
     print('Sleep Complete: ', score['sleep_complete'])
     print('Falling asleep: ', score['fell_asleep_time'].strftime('%H:%M:%S'))
     print('Awakening: ', score['awakening_time'].strftime('%H:%M:%S'))
     print('Total Sleep Time: {:02}:{:02}:{:02}'.format(int(hours), int(minutes), int(seconds)))
+    print('Rem latency - last_awake: {:02}:{:02}:{:02}'.format(int(hrs_rem1), int(mins_rem1), int(secs_rem1)))
+    print('Rem latency - fall_asleep: {:02}:{:02}:{:02}'.format(int(hrs_rem2), int(mins_rem2), int(secs_rem2)))
+
     print('Number of sleep cycles: ', score['n_complete_sleep_cycles'])
     print('Number of awakenings', score['n_awakenings'])
+    print()
+    print('Sleep-time non-REM')
+    print('Absolute: {0}  Relative: {1:0.3f}'.format(int(non_REM),  non_REM/total_sleep_time))
+    print('Sleep-time REM')
+    print()
+    print('Sleep-time REM')
+    print('Absolute: {0}  Relative: {1:0.3f}'.format(int(score['rem_sleep_time']),  score['rem_sleep_time']/total_sleep_time))
     print()
     print('Sleep-time awake')
     print('Absolute: {0}  Relative: {1:0.3f}'.format(int(score['awake_sleep_time']),  score['awake_sleep_time']/total_sleep_time))
@@ -419,10 +461,6 @@ def print_score(score):
     print()
     print('Sleep-time N3')
     print('Absolute: {0}  Relative: {1:0.3f}'.format(int(score['n3_sleep_time']),  score['n3_sleep_time']/total_sleep_time))
-    print()
-    print('Sleep-time REM')
-    print('Absolute: {0}  Relative: {1:0.3f}'.format(int(score['rem_sleep_time']),  score['rem_sleep_time']/total_sleep_time))
-
 
 
 class SleepAnnotationsRef:
@@ -501,7 +539,7 @@ class SleepAnnotationsRef:
             return self.dfAnnot.loc[self.dfAnnot.day == item].reset_index(drop=True)
 
 class SleepAnnotationsTraining(SleepAnnotationsRef):
-    def __init__(self, path_xmlCyberPSG, crossval_groups=4):
+    def __init__(self, path_xmlCyberPSG, crossval_groups=5):
         self._crossvalidation_idx = 0
         self._day = -1
         self._max_crossval = crossval_groups
@@ -529,7 +567,7 @@ class SleepAnnotationsTraining(SleepAnnotationsRef):
                 counters[pos] = 0
 
 class SleepAnnotationsScoring(SleepAnnotationsRef):
-    def __init__(self, path_xmlCyberPSG, crossval_groups=4):
+    def __init__(self, path_xmlCyberPSG, crossval_groups=5):
         self._crossvalidation_idx = 0
         self._day = -1
         self._max_crossval = crossval_groups

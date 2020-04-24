@@ -1,4 +1,4 @@
-# Copyright 2020-present, Mayo Clinic Department of Neurology
+# Copyright (C) 2020, Mayo Clinic - Department of Neurology - Bioelectronics Neurophysiology and Engineering Laboratory
 # All rights reserved.
 #
 # This source code is licensed under the license found in the
@@ -8,12 +8,7 @@
 import numpy as np
 import pandas as pd
 import datetime
-from lib.XML_parsing import parser_xml_CyberPSG
-import xml.etree.ElementTree as ET
-from collections import namedtuple
-import matplotlib
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
+from AISC.XML_parsing import parser_xml_CyberPSG
 from dateutil import tz
 
 def parse_CyberPSG_Annotations_xml(path):

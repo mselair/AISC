@@ -1,3 +1,9 @@
+# Copyright 2020-present, Mayo Clinic Department of Neurology
+# All rights reserved.
+#
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
+
 import os
 import xml.etree.ElementTree as ET
 from abc import ABC, abstractmethod
@@ -42,6 +48,12 @@ class myXML(ABC):
         self._file_path = Parent._file_path
 
         self._children = {} # initialized in the init_from_existing func
+        for ref_child in self.ref_children:
+            self._children[ref_child.tag] = []
+
+        for key in self._children.keys():
+            setattr(self, key, self._children[key])
+
         self.attributes = myXML_AttributeHandler
 
     @classmethod
@@ -75,13 +87,35 @@ class myXML(ABC):
                     self._version = version
                     self._file_id = file_id
                     self._file_path = file_path
+                    self.tag = cls.tag
+                    self.Element = ET.Element(cls.tag)
 
-            Parent = temp_class(version=cls._version, file_id=file_id, file_path=file_path)
-
+        Parent = temp_class(version="1.0", file_id=file_id, file_path=file_path)
         NewInstance = cls(Parent)
-        NewInstance._set_Element(NewInstance.tag)
+        NewInstance._set_Element(ET.Element(cls.tag))
+        NewInstance.attributes = myXML_AttributeHandler(NewInstance.Element)
         NewInstance.param = param
         return NewInstance
+
+    def add_child(self, child_initializer, param="", attributes={}):
+        child = child_initializer(self)
+        child.Element = ET.SubElement(self.Element, child.tag)
+        child.attributes = myXML_AttributeHandler(child.Element)
+
+        child.param = param
+        for key in attributes.keys():
+            child.attributes[key] = attributes[key]
+
+        is_child_set = False
+        for ref_child_key in self._children.keys():
+            if ref_child_key == child.tag:
+                self._children[child.tag].append(child)
+                is_child_set = True
+
+        if is_child_set is False:
+            raise KeyError('Children \"' + child.tag + '\" cannot be assigned to a parent \"' + self.tag + '\". Defined children are: ' + str(self._children.keys()))
+
+        return child
 
     def _init_children(self):
         """
@@ -164,7 +198,10 @@ class myXML(ABC):
 
     @property
     def has_param(self):
-        return not self.Element.text.isspace()
+        try:
+            return not self.Element.text.isspace()
+        except:
+            return False
 
     @property
     def param(self):
@@ -207,6 +244,8 @@ class myXML(ABC):
     def __repr__(self):
         return self.__str__()
 
+
+
 class myXML_AttributeHandler:
     """
     This is just a handler like a dict for. This is included in the myXML objects as a myXML.attributes
@@ -232,7 +271,7 @@ class myXML_AttributeHandler:
         return False
 
     def __setitem__(self, key, value):
-        assert type(key) is str, "Key for inserting an attribute must be string"
+        assert type(key) is str or isinstance(key, ET.QName), "Key for inserting an attribute must be string"
         #assert type(value) is str, "Attribute for xml parsing must be string"
         if not type(value): value = str(value)
         #if self.Element:

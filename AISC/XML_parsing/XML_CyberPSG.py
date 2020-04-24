@@ -1,23 +1,19 @@
-from XML_parsing.myXML import myXML, DELIMITER, ET
+from AISC.XML_parsing.myXML import myXML, DELIMITER, ET
 
-
-def parser_xml_CVAT(path):
+def parser_xml_CyberPSG(path):
     class EmptyClass:
-        def __init__(self, version=1.0, file_id='SPARSE_MIX', file_path=''):
+        def __init__(self, version=1.1, file_id='SPARSE_MIX', file_path=''):
             self._version = version
             self._file_id = file_id
             self._file_path = file_path
 
-    PseudoParent = EmptyClass(version=1.0, file_id=path.split(DELIMITER)[-1].split('.')[0], file_path=path)
-    return myXML_Annotations.init_from_existing(PseudoParent, ET.parse(path).getroot())
-
-
-
-
-
-
+    PseudoParent = EmptyClass(version=1.1, file_id=path.split(DELIMITER)[-1].split('.')[0], file_path=path)
+    return myXML_AnnotationData.init_from_existing(PseudoParent, ET.parse(path).getroot())
 
 ##### VERSION #####
+class myXML_Note(myXML):
+    tag = 'note'
+
 class myXML_Id(myXML):
     tag = 'id'
 
@@ -33,7 +29,7 @@ class myXML_Name(myXML):
 
 class myXML_AnnotationGroup(myXML):
     tag = 'AnnotationGroup'
-    ref_children = [myXML_Id, myXML_Created, myXML_Modified, myXML_Name]
+    ref_children = [myXML_Id, myXML_Created, myXML_Modified, myXML_Name, myXML_Note]
 
 class myXML_AnnotationGroups(myXML):
     tag = 'AnnotationGroups'
@@ -61,7 +57,7 @@ class myXML_GroupAsociations(myXML):
 
 class myXML_AnnotationType(myXML):
     tag = 'AnnotationType'
-    ref_children = [myXML_Id, myXML_Created, myXML_Modified, myXML_Name, myXML_Description, myXML_stdDurationInSec, myXML_startsWithEpoch, myXML_Hotkey, myXML_Color, myXML_GroupAsociations]
+    ref_children = [myXML_Id, myXML_Created, myXML_Modified, myXML_Name, myXML_Description, myXML_stdDurationInSec, myXML_startsWithEpoch, myXML_Hotkey, myXML_Color, myXML_GroupAsociations, myXML_Note]
 
 class myXML_AnnotationTypes(myXML):
     tag = 'AnnotationTypes'
@@ -87,7 +83,7 @@ class myXML_VerticalPositionPercentage(myXML):
 
 class myXML_Annotation(myXML):
     tag = 'Annotation'
-    ref_children = [myXML_Id, myXML_Created, myXML_Modified, myXML_StartTimeUtc, myXML_endTimeUtc, myXML_AnnotationTypeId, myXML_ChannelName, myXML_VerticalPositionPercentage]
+    ref_children = [myXML_Id, myXML_Created, myXML_Modified, myXML_StartTimeUtc, myXML_endTimeUtc, myXML_AnnotationTypeId, myXML_ChannelName, myXML_VerticalPositionPercentage, myXML_Note]
 
 
 class myXML_Annotations(myXML):

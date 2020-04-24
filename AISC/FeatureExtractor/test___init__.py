@@ -6,7 +6,7 @@
 
 
 from unittest import TestCase
-from FeatureExtractor import SleepSpectralFeatureExtractor
+from AISC.FeatureExtractor import SleepSpectralFeatureExtractor
 import numpy as np
 
 class TestFeatureExtractor(TestCase):

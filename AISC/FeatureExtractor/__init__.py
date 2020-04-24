@@ -188,7 +188,7 @@ class SleepSpectralFeatureExtractor:
     def process_signal(self, x=None, fs=None, segm_size=None, fbands=None):
         features = []
         msg = []
-        cutoff = np.array(fbands).max()
+        cutoff = np.array(fbands).max() + 15
         b, a = signal.butter(4, cutoff/(0.5*fs), 'lp', analog=False)
 
 
@@ -202,6 +202,7 @@ class SleepSpectralFeatureExtractor:
 
 
         psd = self.PSD(xbuffered, fs)
+
 
         for func in self._extraction_functions:
             feature, ftr_name = func(psd, fbands, fs, segm_size)
@@ -220,7 +221,13 @@ class SleepSpectralFeatureExtractor:
         return x.reshape((-1, n_segm_size))
 
     @staticmethod
-    def PSD(xbuffered, fs):
+    def PSD(xbuffered, fs, window=True):
+        if window:
+            win = np.hamming(xbuffered.shape[1]).reshape(1, -1)
+            win = win / win.max()
+            xbuffered = xbuffered * win
+
+
         N = xbuffered.shape[1]
         psdx = fft.fft(xbuffered, axis=1)
         psdx = psdx[:, 1:int(np.round(N / 2)) + 1]

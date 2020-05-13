@@ -34,7 +34,7 @@ x = a * np.sin(2*np.pi*f*t) + b
 # Spectral Feature  Extraction
 fs = 500 # sampling frequency of an analysed signal
 segm_size = 30 # time length of a segment which is used for extraction of each feature
-fbands = [[1, 4],
+fbands = [[1, 4], # has to be int values
  [4, 8],
  [8, 12],
  [12, 14],

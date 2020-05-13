@@ -43,7 +43,7 @@ fbands = [[1, 4], # has to be int values
 
 
 
-Extractor = SleepSpectralFeatureExtractor() # nainicializujes
+Extractor = SleepSpectralFeatureExtractor() # init
 feature_values, feature_names = Extractor(x=[x], fs=fs, segm_size=segm_size, fbands=fbands, n_processes=2)
 ```
 

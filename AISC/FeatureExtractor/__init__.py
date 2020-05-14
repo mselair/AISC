@@ -1,4 +1,4 @@
-# Copyright 2020-present, Mayo Clinic Department of Neurology
+# Copyright 2020-present, Mayo Clinic Department of Neurology - Laboratory of Bioelectronics Neurophysiology and Engineering
 # All rights reserved.
 #
 # This source code is licensed under the license found in the
@@ -13,75 +13,22 @@ import scipy.fft as fft
 import scipy.stats as stats
 import scipy.signal as signal
 
+from AISC.utils.types import ObjDict
+
+
 class SleepSpectralFeatureExtractor:
+    version = "0.1.0"
     """
-
+    v0.1.0 Updates
+    - communication between functions (Pxx, fs, ...) changed to ObjDict - see AISC.types.ObjDict
+    - float value frequency bands enabled
     """
-    @property
-    def fs(self):
-        """
-        Sampling frequency getter
-
-        :return: Int value of sampling frequency
-        """
-        return self._fs
-
-    @fs.setter
-    def fs(self, value: int):
-        """
-        Sampling frequency setter
-
-        :param value: Sampling frequency of processed data.
-        :return: None
-        """
-        self._verify_input_fs(value)
-        self._fs = value
-
-    @property
-    def segm_size(self):
-        """
-        Segmentation time window size getter
-
-        :return: Int/Float value of the size of a segmentation window in seconds.
-        """
-        return self._segm_size
-
-    @segm_size.setter
-    def segm_size(self, t):
-        """
-        Segmentation time window size setter
-
-        :param value: (float or int) Size of the segmentation window for parameter extraction in seconds.
-        :return:  None
-        """
-        self._verify_input_segm_size(t)
-        self._segm_size = t
-
-    @property
-    def fbands(self):
-        return self._fbands
-
-    @fbands.setter
-    def fbands(self, bands):
-        self._verify_input_fbands(bands)
-        self._fbands = np.array(bands)
-
-    @property
-    def n_processes(self):
-        return self._n_processes
-
-    @n_processes.setter
-    def n_processes(self, item):
-        self._verify_input_n_processes(item)
-        self._n_processes = item
-
     @staticmethod
     def _verify_input_fs(item):
         if not isinstance(item, int):
             raise TypeError('[INPUT TYPE ERROR] Sampling frequency \"fs\" has to be an integer!')
         if not item > 0:
             raise ValueError('[INPUT VALUE ERROR] Sampling frequency is required to be higher than 0! Pasted value: ' + str(item))
-
         return item
 
     @staticmethod
@@ -123,7 +70,6 @@ class SleepSpectralFeatureExtractor:
 
         return item
 
-
     @staticmethod
     def _verify_input_n_processes(item):
         if not isinstance(item, int):
@@ -135,12 +81,6 @@ class SleepSpectralFeatureExtractor:
             return int(multiprocessing.cpu_count() / 2)
         return item
 
-    def _verify_standard_parameters(self):
-        self._fs = self._verify_input_fs(self._fs)
-        self. _segm_size = self._verify_input_segm_size(self._segm_size)
-        self._fbands = self._verify_input_fbands(self._fbands)
-        self._n_processes = self._verify_input_n_processes(self._n_processes)
-
     def _verify_extractor_functions(self):
         if self._extraction_functions.__len__() < 1:
             raise TypeError('')
@@ -150,65 +90,64 @@ class SleepSpectralFeatureExtractor:
                 raise TypeError('[FUNCTION ERROR] A feature extraction function ' + str(func) + ' with an index ' + str(idx) + ' is not callable')
 
 
-    def __call__(self, x=None, fs=None, segm_size=None, fbands=None, n_processes=1):
+    def __call__(self, x=None, fs=None, segm_size=None, fbands=None, datarate=True, n_processes=1):
         self._extraction_functions = [self.normalized_entropy, self.MeanFreq, self.MedFreq, self.mean_bands, self.rel_bands, self.normalized_entropy_bands]
-
-
         # Standard parameters
-
         x = self._verify_input_x(x)
         fs = self._verify_input_fs(fs)
         segm_size = self._verify_input_segm_size(segm_size)
         fbands = self._verify_input_fbands(fbands)
         n_processes = self._verify_input_n_processes(n_processes)
 
-        # Input
-        #self._verify_standard_parameters()
 
         if isinstance(x, np.ndarray):
-            return self.process_signal(x=x, fs=fs, segm_size=segm_size, fbands=fbands)
+            return self.process_signal(x=x, fs=fs, segm_size=segm_size, fbands=fbands, datarate=datarate)
 
         if isinstance(x, list) and x.__len__() == 1:
-            return self.process_signal(x=x[0], fs=fs, segm_size=segm_size, fbands=fbands)
+            return self.process_signal(x=x[0], fs=fs, segm_size=segm_size, fbands=fbands, datarate=datarate)
 
         else:
             if n_processes == 1:
                 output = []
                 for signal in x:
-                    out_tuple = self.process_signal(x=signal, fs=fs, segm_size=segm_size, fbands=fbands)
+                    out_tuple = self.process_signal(x=signal, fs=fs, segm_size=segm_size, fbands=fbands, datarate=datarate)
                     output.append(out_tuple)
                 return output
             else:
                 with multiprocessing.Pool(n_processes) as p:
-                    pfunc = partial(self.process_signal, fs=fs, segm_size=segm_size, fbands=fbands)
+                    pfunc = partial(self.process_signal, fs=fs, segm_size=segm_size, fbands=fbands, datarate=datarate)
                     output = p.map(pfunc, x)
                 return output
 
 
-    def process_signal(self, x=None, fs=None, segm_size=None, fbands=None):
+    def process_signal(self, x=None, fs=None, segm_size=None, fbands=None, datarate=True):
+        x = x.copy()
         features = []
         msg = []
         cutoff = np.array(fbands).max() + 15
         b, a = signal.butter(4, cutoff/(0.5*fs), 'lp', analog=False)
 
-
         xbuffered = self.buffer(x, fs, segm_size)
-        #print(xbuffered.shape)
-        features = features + [1 - (np.isnan(xbuffered).sum(axis=1)  / (segm_size * fs))]
-        msg = msg + ['DATA_RATE']
+        if datarate is True:
+            features = features + [1 - (np.isnan(xbuffered).sum(axis=1)  / (segm_size * fs))]
+            msg = msg + ['DATA_RATE']
+        xbuffered = xbuffered - np.nanmean(xbuffered, axis=1).reshape((-1, 1))
         xbuffered[np.isnan(xbuffered)] = 0
         xbuffered = xbuffered - xbuffered.mean(axis=1).reshape((-1, 1))
         xbuffered = signal.filtfilt(b, a, xbuffered, axis=1)
 
-
         psd = self.PSD(xbuffered, fs)
-
+        inp_params = ObjDict({
+            'psd': psd,
+            'fs': fs,
+            'fbands': fbands,
+            'segm_size': segm_size
+        })
 
         for func in self._extraction_functions:
-            feature, ftr_name = func(psd, fbands, fs, segm_size)
+            feature, ftr_name = func(inp_params)
             features = features + feature
             msg = msg + ftr_name
-
         return features, msg
 
     @staticmethod
@@ -217,7 +156,6 @@ class SleepSpectralFeatureExtractor:
         residuum = x.shape[0] % n_segm_size
         if residuum > 0:
             x = np.append(x, np.zeros(n_segm_size - residuum))
-
         return x.reshape((-1, n_segm_size))
 
     @staticmethod
@@ -226,7 +164,6 @@ class SleepSpectralFeatureExtractor:
             win = np.hamming(xbuffered.shape[1]).reshape(1, -1)
             win = win / win.max()
             xbuffered = xbuffered * win
-
 
         N = xbuffered.shape[1]
         psdx = fft.fft(xbuffered, axis=1)
@@ -237,26 +174,42 @@ class SleepSpectralFeatureExtractor:
         return psdx
 
     @staticmethod
-    def normalized_entropy(Pxx, bands, fs, segm_size):
-        subpsdx = Pxx[:, bands.min()*segm_size : bands.max()*segm_size + 1]
+    def normalized_entropy(args):
+        Pxx = args.psd
+        bands = args.fbands
+        fs = args.fs
+        segm_size = args.segm_size
+
+
+
+        subpsdx = Pxx[:, int(round(bands.min()*segm_size)) : int(round(bands.max()*segm_size)) + 1]
         return [
                    stats.entropy(subpsdx ** 2, axis=1)
                ], [
-            'SPECTRAL_ENTROPY_' + str(bands.min()) + '-' + str(bands.max()) + 'Hz'
-        ]
+                   'SPECTRAL_ENTROPY_' + str(bands.min()) + '-' + str(bands.max()) + 'Hz'
+               ]
 
     @staticmethod
-    def non_normalized_entropy(Pxx, bands, fs, segm_size):
-        subpsdx = Pxx[:, bands.min()*segm_size : bands.max()*segm_size + 1]
+    def non_normalized_entropy(args):
+        Pxx = args.psd
+        bands = args.fbands
+        fs = args.fs
+        segm_size = args.segm_size
+
+        subpsdx = Pxx[:, int(round(bands.min()*segm_size)) : int(round(bands.max()*segm_size)) + 1]
         return [
                    - np.sum(subpsdx ** 2 * np.log(subpsdx ** 2), axis=1)
                ], [
-            'SPECTRAL_ENTROPY_' + str(bands.min()) + '-' + str(bands.max()) + 'Hz'
-        ]
-
+                   'SPECTRAL_ENTROPY_' + str(bands.min()) + '-' + str(bands.max()) + 'Hz'
+               ]
 
     @staticmethod
-    def MeanFreq(Pxx, bands, fs, segm_size):
+    def MeanFreq(args):
+        Pxx = args.psd
+        bands = args.fbands
+        fs = args.fs
+        segm_size = args.segm_size
+
         f = 0.5 * fs * np.arange(1, Pxx.shape[1]) / Pxx.shape[1]
 
         min_position = np.nanargmin(np.abs(f - bands.min()))
@@ -271,9 +224,13 @@ class SleepSpectralFeatureExtractor:
         return [mnfreq], ['MEAN_DOMINANT_FREQUENCY']
 
     @staticmethod
-    def MedFreq(Pxx, bands, fs, segm_size):
-        pwr = np.sum(Pxx, axis=1)
+    def MedFreq(args):
+        Pxx = args.psd
+        bands = args.fbands
+        fs = args.fs
+        segm_size = args.segm_size
 
+        pwr = np.sum(Pxx, axis=1)
         f = 0.5 * fs * np.arange(1, Pxx.shape[1]) / Pxx.shape[1]
         min_position = np.nanargmin(np.abs(f - bands.min()))
         max_position = np.nanargmin(np.abs(f - bands.max()))
@@ -289,11 +246,17 @@ class SleepSpectralFeatureExtractor:
         return [medfreq], ['SPECTRAL_MEDIAN_FREQUENCY']
 
     @staticmethod
-    def mean_bands(P, bands, fs, segm_size):
+    def mean_bands(args):
+        Pxx = args.psd
+        bands = args.fbands
+        fs = args.fs
+        segm_size = args.segm_size
+
+
         outp_params = []
         outp_msg = []
         for band in bands:
-            subpsdx = P[:, band[0]*segm_size:band[1]*segm_size + 1]
+            subpsdx = Pxx[:, int(round(band[0]*segm_size)):int(round(band[1]*segm_size)) + 1]
             outp_params.append(
                 np.nanmean(subpsdx, axis=1)
             )
@@ -301,12 +264,18 @@ class SleepSpectralFeatureExtractor:
         return outp_params, outp_msg
 
     @staticmethod
-    def rel_bands(P, bands, fs, segm_size):
+    def rel_bands(args):
+        Pxx = args.psd
+        bands = args.fbands
+        fs = args.fs
+        segm_size = args.segm_size
+
+
         outp_params = []
         outp_msg = []
-        fullpsdx = np.nansum(P[:, bands.min()*segm_size:bands.max()*segm_size + 1], axis=1)
+        fullpsdx = np.nansum(Pxx[:, int(round(bands.min()*segm_size)) : int(round(bands.max()*segm_size)) + 1], axis=1)
         for band in bands:
-            subpsdx = P[:, band[0]*segm_size:band[1]*segm_size + 1]
+            subpsdx = Pxx[:, int(round(band[0]*segm_size)):int(round(band[1]*segm_size)) + 1]
             outp_params.append(
                 np.nansum(subpsdx, axis=1) / fullpsdx
             )
@@ -314,11 +283,17 @@ class SleepSpectralFeatureExtractor:
         return outp_params, outp_msg
 
     @staticmethod
-    def normalized_entropy_bands(P, bands, fs, segm_size):
+    def normalized_entropy_bands(args):
+        Pxx = args.psd
+        bands = args.fbands
+        fs = args.fs
+        segm_size = args.segm_size
+
+
         outp_params = []
         outp_msg = []
         for band in bands:
-            subpsdx = P[:, band[0]*segm_size:band[1]*segm_size + 1]
+            subpsdx = Pxx[:, int(round(band[0]*segm_size)):int(round(band[1]*segm_size)) + 1]
             outp_params.append(
                 stats.entropy(subpsdx ** 2, axis=1)
             )
@@ -326,14 +301,19 @@ class SleepSpectralFeatureExtractor:
         return outp_params, outp_msg
 
     @staticmethod
-    def non_normalized_entropy_bands(P, bands, fs, segm_size):
+    def non_normalized_entropy_bands(args):
+        Pxx = args.psd
+        bands = args.fbands
+        fs = args.fs
+        segm_size = args.segm_size
+
+
         outp_params = []
         outp_msg = []
         for band in bands:
-            subpsdx = P[:, band[0]*segm_size:band[1]*segm_size + 1]
+            subpsdx = Pxx[:, int(round(band[0]*segm_size)):int(round(band[1]*segm_size)) + 1]
             outp_params.append(
                 - np.sum(subpsdx ** 2 * np.log(subpsdx ** 2), axis=1)
             )
             outp_msg.append('SPECTRAL_ENTROPY_' + str(band[0]) + '-' + str(band[1]) + 'Hz')
         return outp_params, outp_msg
-

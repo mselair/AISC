@@ -22,7 +22,7 @@ This feature extractor implementation is based on the repository [Semi_Automated
 ### Example 
 ```python
 import sys
-sys.path.append('D:\\MayoWork\\MSEL\\AISC') # Set the source path to the lib folder of this python package.
+# sys.path.append('D:\\MayoWork\\MSEL\\AISC') # Set the source path to the lib folder of this python package.
 
 import numpy as np
 from AISC.FeatureExtractor import SleepSpectralFeatureExtractor

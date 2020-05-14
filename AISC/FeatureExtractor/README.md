@@ -13,14 +13,19 @@ Mean dominant frequency, spectral median frequency and spectral entropy are esti
 Spectral entropy is also estimated for each of the specified bands separately. Mean power spectral density is returned for each band.
 Relative spectral density is normalized using an absolute mean power spectral density value on an interval defined by a minimum and maximum value within the all bands.
 
+#### Source
+This feature extractor implementation is based on the repository [Semi_Automated_Sleep_Classifier_iEEG](https://github.com/vkremen/Semi_Automated_Sleep_Classifier_iEEG/blob/master/SemiAutomated%20Assessment%20of%20Sleep%20EEG%20Graphical%20Description.pdf
+), please see images and examples.
+
+
 
 ### Example 
 ```python
 import sys
-sys.path.append('D:\\MayoWork\\MSEL\\lib') # Set the source path to the lib folder of this python package.
+sys.path.append('D:\\MayoWork\\MSEL\\AISC') # Set the source path to the lib folder of this python package.
 
 import numpy as np
-from FeatureExtractor import SleepSpectralFeatureExtractor
+from AISC.FeatureExtractor import SleepSpectralFeatureExtractor
 
 # Example synthetic signal generator
 fs = 500 # sampling frequency
@@ -34,7 +39,7 @@ x = a * np.sin(2*np.pi*f*t) + b
 # Spectral Feature  Extraction
 fs = 500 # sampling frequency of an analysed signal
 segm_size = 30 # time length of a segment which is used for extraction of each feature
-fbands = [[1, 4], # has to be int values
+fbands = [[1, 4],
  [4, 8],
  [8, 12],
  [12, 14],

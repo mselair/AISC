@@ -52,7 +52,7 @@ Extractor = SleepSpectralFeatureExtractor() # init
 feature_values, feature_names = Extractor(x=[x], fs=fs, segm_size=segm_size, fbands=fbands, n_processes=2)
 ```
 
-If any features should be added or removed, see the information and the example bellow. The extractor instance estimates all features using a static methods of a SleepSpectralFeatureExtractor clas.
+If any features should be added or removed, see the information and the example bellow. The extractor instance estimates all features using a static methods of a SleepSpectralFeatureExtractor class.
 Therefore, any features can be added, or removed. Each method takes a unified set of input variables. *Pxx, bands, fs, segm_size*.
 * Pxx - numpy.ndarray with dimensions [number_of_segments_to_classify, n_samples_spectrum] of spectral power densities (PSD) on an interval (0 Hz - fs/2>.
     * To get this PSDs you can use a built-in method *buffer* to cut your signal into specified segments and a method *PSD* to obtain PSD - returns already 1 sided PSD without a bias value.

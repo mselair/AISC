@@ -49,7 +49,9 @@ fbands = [[1, 4],
 
 
 Extractor = SleepSpectralFeatureExtractor() # init
-feature_values, feature_names = Extractor(x=[x], fs=fs, segm_size=segm_size, fbands=fbands, n_processes=2)
+feature_values, feature_names = Extractor(x=[x], fs=fs, segm_size=segm_size, fbands=fbands, n_processes=1) # one signal
+feature_values, feature_names = Extractor(x=[x, x], fs=fs, segm_size=segm_size, fbands=fbands, n_processes=2) # for more signals
+
 ```
 
 If any features should be added or removed, see the information and the example bellow. The extractor instance estimates all features using a static methods of a SleepSpectralFeatureExtractor class.

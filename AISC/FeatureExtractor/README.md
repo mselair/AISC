@@ -7,7 +7,7 @@ The extractor extracts by default following features:
 * Mean power spectral density
 * Relative spectral density
 
-The extractor also reports **Data rate** which gives a relative ratio of valid values in a pasted signal based on a number os NaN values.
+The extractor also reports **Data rate**, if not chosen otherwise, which gives a relative ratio of valid values in a pasted signal based on a number os NaN values.
 The extractor requires input information about bands at which parameters will be calculated. Please see an example with a synthetic signal bellow.
 Mean dominant frequency, spectral median frequency and spectral entropy are estimated from the frequency range specified by a minimum and maximum value within the all bands.
 Spectral entropy is also estimated for each of the specified bands separately. Mean power spectral density is returned for each band.

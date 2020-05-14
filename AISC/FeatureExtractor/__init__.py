@@ -25,8 +25,8 @@ class SleepSpectralFeatureExtractor:
     """
     @staticmethod
     def _verify_input_fs(item):
-        if not isinstance(item, int):
-            raise TypeError('[INPUT TYPE ERROR] Sampling frequency \"fs\" has to be an integer!')
+        if not isinstance(item, (int, float)):
+            raise TypeError('[INPUT TYPE ERROR] Sampling frequency \"fs\" has to be an integer, or float!')
         if not item > 0:
             raise ValueError('[INPUT VALUE ERROR] Sampling frequency is required to be higher than 0! Pasted value: ' + str(item))
         return item

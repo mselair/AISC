@@ -14,7 +14,7 @@ from pymef.mef_session import MefSession
 
 class MEF_READER:
     def __init__(self, mef_path, password=''):
-        self.session = mef_session.MefSession(mef_path, '', True)
+        self.session = mef_session.MefSession(mef_path, password, True)
         self.bi = self.session.read_ts_channel_basic_info()
         self.channels = [channel['name'] for channel in self.bi]
 

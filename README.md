@@ -5,7 +5,7 @@ See readme files for each subpackage in the AISC folder.
 This is pre-release of tools. Any reports, suggestions, or bug reports are welcomed.
 
 ## Contains
-- Simplified python wrapper for [Multiscale Electrophysiology Format (MEF)](https://github.com/msel-source/meflib) using [pymef](https://github.com/msel-source/pymef) - See [documentation](https://pymef.readthedocs.io/en/latest/) for pymef.
+- Simplified python wrapper for [Multiscale Electrophysiology Format (MEF)](https://github.com/msel-source/meflib) using [pymef](https://github.com/msel-source/pymef) - see [documentation](https://pymef.readthedocs.io/en/latest/).
 - SlowWaveDetector - Delta wave detector
 - EEG Sleep Feature Extractor
 

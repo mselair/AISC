@@ -1,18 +1,25 @@
-# Copyright 2020-present, Mayo Clinic Department of Neurology
+# Copyright 2020-present, Mayo Clinic Department of Neurology - Laboratory of Bioelectronics Neurophysiology and Engineering
 # All rights reserved.
 #
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
+
 import os
-from shutil import rmtree
 import time
 import numpy as np
+from shutil import rmtree
 from pymef import mef_session
 from pymef.mef_session import MefSession
 
+from ..utils.types import ObjDict
+
 
 class MEF_READER:
+    version = '1.0.0'
+    """
+    For an example see following website: 
+    """
     def __init__(self, mef_path, password=''):
         self.session = mef_session.MefSession(mef_path, password, True)
         self.bi = self.session.read_ts_channel_basic_info()
@@ -51,47 +58,58 @@ class MEF_READER:
 
 
 class MEF_WRITTER:
+    version = '1.0.0'
+    """
+    For an example see following website: 
+    """
     def __init__(self, session_path=None, overwrite=False, password=''):
         self.bi = None
         self.recording_offset = None
         self.channels = None
         self.samps_mef_block = 300
 
-        self.section3_dict = {'recording_time_offset': np.nan,
-                              'DST_start_time': 0,
-                              'DST_end_time': 0,
-                              'GMT_offset': -6*3600,
-                              'subject_name_1': b'test',
-                              'subject_name_2': b'test',
-                              'subject_ID': b'None',
-                              'recording_location': b'P'}
+
+        self.section3_dict = ObjDict(
+            {
+                  'recording_time_offset': np.nan,
+                  'DST_start_time': 0,
+                  'DST_end_time': 0,
+                  'GMT_offset': -6*3600,
+                  'subject_name_1': b'test',
+                  'subject_name_2': b'test',
+                  'subject_ID': b'None',
+                  'recording_location': b'P'
+            })
 
 
-        self.section2_ts_dict = {'channel_description': b'Test_channel',
-                                 'session_description': b'Test_session',
-                                 'recording_duration': np.nan,  # TODO:test 0 / None
-                                 'reference_description': b'None',
-                                 'acquisition_channel_number': 1,
-                                 'sampling_frequency': np.nan,
-                                 'notch_filter_frequency_setting': 0,
-                                 'low_frequency_filter_setting': 1,
-                                 'high_frequency_filter_setting': 10,
-                                 'AC_line_frequency': 0,
-                                 'units_conversion_factor': 0.0001,
-                                 'units_description': b'uV',
-                                 'maximum_native_sample_value': 0.0,
-                                 'minimum_native_sample_value': 0.0,
-                                 'start_sample': 0,  # Different for segments
-                                 'number_of_blocks': 0,
-                                 'maximum_block_bytes': 0,
-                                 'maximum_block_samples': 0,
-                                 'maximum_difference_bytes': 0,
-                                 'block_interval': 0,
-                                 'number_of_discontinuities': 0,
-                                 'maximum_contiguous_blocks': 0,
-                                 'maximum_contiguous_block_bytes': 0,
-                                 'maximum_contiguous_samples': 0,
-                                 'number_of_samples': 0}
+        self.section2_ts_dict = ObjDict(
+            {
+                 'channel_description': b'Test_channel',
+                 'session_description': b'Test_session',
+                 'recording_duration': np.nan,  # TODO:test 0 / None
+                 'reference_description': b'None',
+                 'acquisition_channel_number': 1,
+                 'sampling_frequency': np.nan,
+                 'notch_filter_frequency_setting': 0,
+                 'low_frequency_filter_setting': 1,
+                 'high_frequency_filter_setting': 10,
+                 'AC_line_frequency': 0,
+                 'units_conversion_factor': 0.0001,
+                 'units_description': b'uV',
+                 'maximum_native_sample_value': 0.0,
+                 'minimum_native_sample_value': 0.0,
+                 'start_sample': 0,  # Different for segments
+                 'number_of_blocks': 0,
+                 'maximum_block_bytes': 0,
+                 'maximum_block_samples': 0,
+                 'maximum_difference_bytes': 0,
+                 'block_interval': 0,
+                 'number_of_discontinuities': 0,
+                 'maximum_contiguous_blocks': 0,
+                 'maximum_contiguous_block_bytes': 0,
+                 'maximum_contiguous_samples': 0,
+                 'number_of_samples': 0
+            })
 
         if overwrite is True:
             if os.path.exists(session_path):
@@ -108,6 +126,9 @@ class MEF_WRITTER:
         self.session.close()
 
     def create_segment(self, data=None, channel=None, start_stamp=None, end_stamp=None, sampling_frequency=None, pwd1=None, pwd2=None):
+        if data.dtype != np.int32:
+            raise AssertionError('[TYPE ERROR] - MEF file writer accepts only int32 signal datatype!')
+        data = np.append(0, data)
         self.section3_dict['recording_time_offset'] = int(start_stamp - 1e6)
         self.section2_ts_dict['sampling_frequency'] = sampling_frequency
         self.section2_ts_dict['recording_duration'] = int((end_stamp - start_stamp) / 1e6)
@@ -119,8 +140,8 @@ class MEF_WRITTER:
                                                    pwd2,
                                                    start_stamp,
                                                    end_stamp,
-                                                   self.section2_ts_dict,
-                                                   self.section3_dict)
+                                                   dict(self.section2_ts_dict),
+                                                   dict(self.section3_dict))
 
         self.session.write_mef_ts_segment_data(channel,
                                                0,
@@ -139,3 +160,5 @@ class MEF_WRITTER:
                                       end_stamp,
                                       self.samps_mef_block,
                                       data)
+
+

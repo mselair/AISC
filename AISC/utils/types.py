@@ -5,32 +5,29 @@
 # LICENSE file in the root directory of this source tree.
 
 
-class TwoWayDict(dict):
+def DicToObj(d):
     """
-    2-way dict.
+    Converts dictionary into object where, keys - converts keys into attributes
     """
-    def __delitem__(self, key):
-        value = super().pop(key)
-        super().pop(value, None)
-    def __setitem__(self, key, value):
-        if key in self:
-            del self[self[key]]
-        if value in self:
-            del self[value]
-        super().__setitem__(key, value)
-        super().__setitem__(value, key)
-
-    def __repr__(self):
-        return f"{type(self).__name__}({super().__repr__()})"
-
+    top = type('new', (object,), d)
+    seqs = tuple, list, set, frozenset
+    for i, j in d.items():
+        if isinstance(j, dict):
+            setattr(top, i, DicToObj(j))
+        elif isinstance(j, seqs):
+            setattr(top, i,
+                    type(j)(DicToObj(sj) if isinstance(sj, dict) else sj for sj in j))
+        else:
+            setattr(top, i, j)
+    return top
 
 
 class ObjDict(dict):
     """
-    Dictionary which you can access a) as a dict; b) as a struct with attributes. Can use both fro adding and deleting
+    Dictionary which you can access a) as a dict; b) as a struct with attributes. Can use both foo adding and deleting
     attributes resp items. Inherits from dict
     """
-    def __init__(self, VT_):
+    def __init__(self, VT_={}):
         super().__init__(VT_)
         for key in VT_.keys():
             self.__setattr__(key, VT_[key])
@@ -44,13 +41,12 @@ class ObjDict(dict):
             self.__setattr__(key, value)
 
     def __setattr__(self, key, value):
-        if key in dir(self):
+        if key in self.__dir__():
             self.__delattr__(key)
 
         super().__setattr__(key, value)
         if not key in self:
             self.__setitem__(key, value)
-
 
     def __delitem__(self, key):
         value = super().pop(key)
@@ -66,20 +62,12 @@ class ObjDict(dict):
     def __repr__(self):
         return f"{type(self).__name__}({super().__repr__()})"
 
+    def __missing__(self, key):
+        self[key] = ObjDict()
+        return self[key]
 
+    def __getattr__(self, item):
+        if not item in self.__dir__():
+            self.__missing__(item)
+        return super().__getattribute__(item)
 
-def DicToObj(d):
-    """
-    Converts dictionary into object where, keys
-    """
-    top = type('new', (object,), d)
-    seqs = tuple, list, set, frozenset
-    for i, j in d.items():
-        if isinstance(j, dict):
-            setattr(top, i, DicToObj(j))
-        elif isinstance(j, seqs):
-            setattr(top, i,
-                    type(j)(DicToObj(sj) if isinstance(sj, dict) else sj for sj in j))
-        else:
-            setattr(top, i, j)
-    return top

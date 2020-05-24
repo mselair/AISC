@@ -7,7 +7,7 @@ The extractor extracts by default following features:
 * Mean power spectral density
 * Relative spectral density
 
-The extractor also reports **Data rate**, if not chosen otherwise, which gives a relative ratio of valid values in a pasted signal based on a number os NaN values.
+The extractor also reports **Data rate** which gives a relative ratio of valid values in a pasted signal based on a number os NaN values.
 The extractor requires input information about bands at which parameters will be calculated. Please see an example with a synthetic signal bellow.
 Mean dominant frequency, spectral median frequency and spectral entropy are estimated from the frequency range specified by a minimum and maximum value within the all bands.
 Spectral entropy is also estimated for each of the specified bands separately. Mean power spectral density is returned for each band.
@@ -22,7 +22,7 @@ This feature extractor implementation is based on the repository [Semi_Automated
 ### Example 
 ```python
 import sys
-# sys.path.append('D:\\MayoWork\\MSEL\\AISC') # Set the source path to the lib folder of this python package.
+sys.path.append('D:\\MayoWork\\MSEL\\AISC') # Set the source path to the lib folder of this python package.
 
 import numpy as np
 from AISC.FeatureExtractor import SleepSpectralFeatureExtractor
@@ -49,12 +49,10 @@ fbands = [[1, 4],
 
 
 Extractor = SleepSpectralFeatureExtractor() # init
-feature_values, feature_names = Extractor(x=[x], fs=fs, segm_size=segm_size, fbands=fbands, n_processes=1) # one signal
-feature_values, feature_names = Extractor(x=[x, x], fs=fs, segm_size=segm_size, fbands=fbands, n_processes=2) # for more signals
-
+feature_values, feature_names = Extractor(x=[x], fs=fs, segm_size=segm_size, fbands=fbands, n_processes=2)
 ```
 
-If any features should be added or removed, see the information and the example bellow. The extractor instance estimates all features using a static methods of a SleepSpectralFeatureExtractor class.
+If any features should be added or removed, see the information and the example bellow. The extractor instance estimates all features using a static methods of a SleepSpectralFeatureExtractor clas.
 Therefore, any features can be added, or removed. Each method takes a unified set of input variables. *Pxx, bands, fs, segm_size*.
 * Pxx - numpy.ndarray with dimensions [number_of_segments_to_classify, n_samples_spectrum] of spectral power densities (PSD) on an interval (0 Hz - fs/2>.
     * To get this PSDs you can use a built-in method *buffer* to cut your signal into specified segments and a method *PSD* to obtain PSD - returns already 1 sided PSD without a bias value.

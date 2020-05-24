@@ -1,3 +1,13 @@
+# MEF
+
+Package for easier utilisation of [pymef - Python wrapper](https://github.com/msel-source/pymef) for [MEF - Multiscale Electrophysiology Format](https://github.com/msel-source/meflib) file format.
+See [documentation](https://pymef.readthedocs.io/en/latest/) for pymef.
+
+
+
+
+### Example
+
 ```python
 # Requirements
 # Python 3.6

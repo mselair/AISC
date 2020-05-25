@@ -1,3 +1,4 @@
+
 # Copyright 2020-present, Mayo Clinic Department of Neurology - Laboratory of Bioelectronics Neurophysiology and Engineering
 # All rights reserved.
 #
@@ -11,18 +12,25 @@ import scipy.fft as fft
 
 def get_datarate(x):
     """
-    Calculates datarate based on NaN values
-
+    Return the most important thing about a person.
     Parameters
     ----------
-    x : numpy ndarray
-
-    Returns
-    -------
-    numpy ndarray
-
-    flaot values 0-1 with relative NaN count per signal.
+    your_name
+        A string indicating the name of the person.
     """
+    #"""
+    #Calculates datarate based on NaN values
+
+    #Parameters
+    #----------
+    #x : numpy ndarray
+
+    #Returns
+    #-------
+   # numpy ndarray
+
+    #flaot values 0-1 with relative NaN count per signal.
+    #"""
     if isinstance(x, np.ndarray):
         return 1 - (np.isnan(x).sum(axis=1)  / (x.shape[0]))
     else:

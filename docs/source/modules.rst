@@ -6,4 +6,3 @@ AISC
    :numbered:
 
    AISC
-   setup

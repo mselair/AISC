@@ -1,4 +1,5 @@
-![Documentation Status](https://readthedocs.org/projects/aisc-docs/badge/?version=latest)
+[![Build Status](https://travis-ci.com/mselair/AISC.svg?branch=master)]
+[![Documentation Status](https://readthedocs.org/projects/aisc-docs/badge/?version=latest)](https://aisc-docs.readthedocs.io/)
 
 # Automated iEEG Sleep Classifier (AISC)
 version: 0.0.1 - alpha

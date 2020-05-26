@@ -23,7 +23,7 @@ pip install mselair-aisc
 ```
 
 ## Documentation
-Documentation will be added in next release.
+Reference to documentation will be added in next release.
 
 
 ## Acknowledgment

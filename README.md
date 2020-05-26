@@ -9,7 +9,7 @@ This is a pre-release of tools for our collaborators. Any reports, suggestions, 
 
 ## Contains
 - Simplified python wrapper for [Multiscale Electrophysiology Format (MEF)](https://github.com/msel-source/meflib) using [pymef](https://github.com/msel-source/pymef) - see [pymef documentation](https://pymef.readthedocs.io/en/latest/).
-- SlowWaveDetector - Delta wave detector
+- WaveDetector - Wave detector designed for Delta Wave detection
 - EEG Sleep Feature Extractor
 
 #### Installation:

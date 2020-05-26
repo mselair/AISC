@@ -4,7 +4,7 @@
 # Automated iEEG Sleep Classifier (AISC)
 version: 0.0.1 - alpha
 
-This is a pre-release of tools for our collaborators. Any reports, suggestions, or bug reports are welcomed.
+This is a pre-release of tools for our collaborators. Any suggestions, or bug reports are welcomed.
 
 See readme files for each subpackage in the AISC folder - AISC.FeatureExtractor - README
 

@@ -1,10 +1,10 @@
-AISC.WaveDetector package
+AISC.WaveDetector
 =========================
 
 Submodules
 ----------
 
-AISC.WaveDetector.WDet module
+AISC.WaveDetector.WDet
 -----------------------------
 
 .. automodule:: AISC.WaveDetector.WDet

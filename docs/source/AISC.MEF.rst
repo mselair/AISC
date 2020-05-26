@@ -1,10 +1,10 @@
-AISC.MEF package
+AISC.MEF
 ================
 
 Submodules
 ----------
 
-AISC.MEF.io module
+AISC.MEF.io
 ------------------
 
 .. automodule:: AISC.MEF.io

@@ -1,10 +1,10 @@
-AISC.FeatureExtractor package
+AISC.FeatureExtractor
 =============================
 
 Submodules
 ----------
 
-AISC.FeatureExtractor.FeatureExtractor module
+AISC.FeatureExtractor.FeatureExtractor
 ---------------------------------------------
 
 .. automodule:: AISC.FeatureExtractor.FeatureExtractor

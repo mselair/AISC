@@ -1,4 +1,4 @@
-AISC package
+AISC
 ============
 
 Subpackages

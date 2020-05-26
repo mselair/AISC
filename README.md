@@ -9,7 +9,7 @@ This is a pre-release of tools for our collaborators. Any suggestions, or bug re
 See readme files for each subpackage in the AISC folder - AISC.FeatureExtractor - README
 
 ## Contains
-- Simplified python wrapper for [Multiscale Electrophysiology Format (MEF)](https://github.com/msel-source/meflib) using [pymef](https://github.com/msel-source/pymef) - see [pymef documentation](https://pymef.readthedocs.io/en/latest/).
+- A simplified Python wrapper for [Multiscale Electrophysiology Format (MEF)](https://github.com/msel-source/meflib) using [pymef](https://github.com/msel-source/pymef) - see [pymef documentation](https://pymef.readthedocs.io/en/latest/).
 
 - EEG Sleep Feature Extractor - Based on [Semi_Automated_Sleep_Classifier](https://github.com/vkremen/Semi_Automated_Sleep_Classifier_iEEG)
 

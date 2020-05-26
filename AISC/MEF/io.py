@@ -58,6 +58,7 @@ class MEF_READER:
 
 
 class MEF_WRITTER:
+
     version = '1.0.0'
     """
     For an example see following website: 
@@ -160,5 +161,4 @@ class MEF_WRITTER:
                                       end_stamp,
                                       self.samps_mef_block,
                                       data)
-
 

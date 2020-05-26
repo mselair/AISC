@@ -1,4 +1,4 @@
-![Documentation Status](https://readthedocs.org/projects/pymef/badge/?version=latest)
+![Documentation Status](https://readthedocs.org/projects/aisc-docs/badge/?version=latest)
 
 # Automated iEEG Sleep Classifier (AISC)
 version: 0.0.1 - alpha

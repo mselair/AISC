@@ -1,6 +1,6 @@
 .DS_Store
-docs/build
-__pycache__
-idea/*
+docs/build/
+__pycache__/
+.idea/
 *.pyc
 .-*

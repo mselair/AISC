@@ -16,10 +16,8 @@ from ..utils.types import ObjDict
 
 
 class MEF_READER:
-    version = '1.0.0'
-    """
-    For an example see following website: 
-    """
+    __version__ = '1.0.0'
+
     def __init__(self, mef_path, password=''):
         self.session = mef_session.MefSession(mef_path, password, True)
         self.bi = self.session.read_ts_channel_basic_info()
@@ -59,10 +57,8 @@ class MEF_READER:
 
 class MEF_WRITTER:
 
-    version = '1.0.0'
-    """
-    For an example see following website: 
-    """
+    __version__ = '1.0.0'
+
     def __init__(self, session_path=None, overwrite=False, password=''):
         self.bi = None
         self.recording_offset = None

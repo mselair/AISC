@@ -1,4 +1,3 @@
-
 # Copyright 2020-present, Mayo Clinic Department of Neurology - Laboratory of Bioelectronics Neurophysiology and Engineering
 # All rights reserved.
 #
@@ -167,6 +166,7 @@ def fft_filter(X, fs, cutoff, type=''):
         X_new[pos:-pos] = Xs[pos:-pos]
     X = np.real(fft.ifft(X_new))
     return X
+
 
 
 

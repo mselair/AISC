@@ -1,8 +1,9 @@
 AISC.MEF
 ================
 
-Submodules
-----------
+.. automodule:: AISC.MEF
+   :members:
+   :undoc-members:
 
 AISC.MEF.io
 ------------------
@@ -11,10 +12,4 @@ AISC.MEF.io
    :members:
    :undoc-members:
 
-
-Module contents
----------------
-
-.. automodule:: AISC.MEF
-   :members:
-   :undoc-members:
+.. include:: AISC.MEF.README.rst

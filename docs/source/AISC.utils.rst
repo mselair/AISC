@@ -1,8 +1,9 @@
 AISC.utils
 ==================
 
-Submodules
-----------
+.. automodule:: AISC.utils
+   :members:
+   :undoc-members:
 
 AISC.utils.feature\_util
 -------------------------------
@@ -25,10 +26,3 @@ AISC.utils.types
    :members:
    :undoc-members:
 
-
-Module contents
----------------
-
-.. automodule:: AISC.utils
-   :members:
-   :undoc-members:

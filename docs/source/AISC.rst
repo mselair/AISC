@@ -1,20 +1,25 @@
 AISC
 ============
 
-Subpackages
------------
+.. automodule:: AISC
+   :members:
+   :undoc-members:
+
 
 .. toctree::
-   :maxdepth: 5
+   :numbered:
 
    AISC.FeatureExtractor
    AISC.MEF
    AISC.WaveDetector
    AISC.utils
+   
 
-Module contents
----------------
+ReadmeMe
+===========
+.. include:: AISC.README.rst
 
-.. automodule:: AISC
-   :members:
-   :undoc-members:
+
+LICENSE
+=========
+.. include:: ../../LICENSE

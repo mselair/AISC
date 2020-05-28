@@ -17,7 +17,7 @@ from AISC.utils.types import ObjDict
 
 
 class SleepSpectralFeatureExtractor:
-    version = "0.1.1"
+    __version__ = "0.1.1"
     """
     v0.1.0 Updates
     - communication between functions (Pxx, fs, ...) changed to ObjDict - see AISC.types.ObjDict

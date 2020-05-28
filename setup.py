@@ -4,11 +4,24 @@ from setuptools import Command, Extension
 import shlex
 import subprocess
 import os
+import re
+
+
+## get version from file
+VERSIONFILE="./AISC/__init__.py"
+verstrline = open(VERSIONFILE, "rt").read()
+VSRE = r"^__version__ = ['\"]([^'\"]*)['\"]"
+mo = re.search(VSRE, verstrline, re.M)
+if mo:
+    verstr = mo.group(1)
+else:
+    raise RuntimeError("Unable to find version string in %s." % (VERSIONFILE,))
+
 
 
 setuptools.setup(
     name="mselair-aisc",
-    version="0.0.1",
+    version=verstr,
     license='MFMER',
     url="https://github.com/mselair/AISC",
 

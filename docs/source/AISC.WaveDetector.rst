@@ -1,8 +1,10 @@
 AISC.WaveDetector
 =========================
 
-Submodules
-----------
+.. automodule:: AISC.WaveDetector
+   :members:
+   :undoc-members:
+   
 
 AISC.WaveDetector.WDet
 -----------------------------
@@ -11,10 +13,4 @@ AISC.WaveDetector.WDet
    :members:
    :undoc-members:
 
-
-Module contents
----------------
-
-.. automodule:: AISC.WaveDetector
-   :members:
-   :undoc-members:
+.. include:: AISC.WaveDetector.README.rs

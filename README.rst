@@ -1,6 +1,3 @@
-
-Automated iEEG Sleep Classifier (AISC)
-""""""""""""""""""""""""""""""""""""""""""""""""""""""
 .. image:: https://travis-ci.com/mselair/AISC.svg?branch=master
     :target: https://pypi.org/project/mselair-aisc/
 
@@ -14,6 +11,9 @@ Automated iEEG Sleep Classifier (AISC)
     :target: https://pypi.org/project/mselair-aisc/
 
 .. <COMMENT> Bottom badges generated using pypi:readme-badges lib - there's nice tutorial how to do it
+
+Automated iEEG Sleep Classifier (AISC)
+""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 See readme files for each sub-package in the AISC folder.
 This is a pre-release of tools for our collaborators. Any reports, suggestions, or bug reports are welcomed.

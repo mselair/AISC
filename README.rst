@@ -1,4 +1,4 @@
-.. image:: https://travis-ci.com/mselair/AISC.svg?branch=master
+.. image:: https://travis-ci.org/mselair/AISC.svg?branch=master
     :target: https://pypi.org/project/mselair-aisc/
 
 .. image:: https://readthedocs.org/projects/mselair-aisc/badge/?version=latest

@@ -11,6 +11,7 @@ CyberPSG_XML_writter
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
+
     from AISC.XltekConvertor import CyberPSG_XML_Writter
     import pytz # python timezone
     from datetime import datetime, timedelta
@@ -54,6 +55,7 @@ Neuralynx MEF-signal + Annotation to SignalPlant convertor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: bash
+
     conda activate filip_dogs
     cd MSEL_folder
 
@@ -66,6 +68,7 @@ XLTEK to CyberPSG Video Convertor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: bash
+
     conda activate filip_dogs
     cd MSEL_folder
 

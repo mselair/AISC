@@ -1,5 +1,6 @@
 Neuralynx Annotation to CyberPSG convertor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 .. code-block:: bash
     conda activate filip_dogs
     cd MSEL_folder
@@ -8,6 +9,7 @@ Neuralynx Annotation to CyberPSG convertor
 
 CyberPSG_XML_writter
 ^^^^^^^^^^^^^^^^^^^^^^^
+
 .. code-block:: python
     from AISC.XltekConvertor import CyberPSG_XML_Writter
     import pytz # python timezone
@@ -50,6 +52,7 @@ CyberPSG_XML_writter
 
 Neuralynx MEF-signal + Annotation to SignalPlant convertor
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 .. code-block:: bash
     conda activate filip_dogs
     cd MSEL_folder

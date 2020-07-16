@@ -6,7 +6,7 @@
 
 import numpy as np
 from copy import deepcopy
-from AISC.utils.signal import LowFrequencyFilterLP, fft_filter
+from AISC.utils.signal import LowFrequencyFilter, fft_filter
 
 def get_first_extreme(X, X_signum, idx=0, tag=''):
     if tag == 'min':
@@ -166,7 +166,7 @@ class WaveDetector:
         self.fs = fs
         self.cutoff_low = cutoff_low
         self.cutoff_high = cutoff_high
-        self.LFFilter = LowFrequencyFilterLP(fs=fs, cutoff=cutoff_low, n_decimate=2, n_order=101, dec_cutoff=0.3)
+        self.LFFilter = LowFrequencyFilter(fs=fs, cutoff=cutoff_low, n_decimate=2, n_order=101, dec_cutoff=0.3, filter_type='lp')
 
         self.statistic_functions = [self.min_stats, self.max_stats, self.pk2pk_stats, self.slope_stats, self.delta_t_stats]
 

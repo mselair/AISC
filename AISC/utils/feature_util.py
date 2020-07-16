@@ -20,9 +20,9 @@ def zscore(x):
 
     Returns
     _______
-    numpy ndarray
-
+    normalized_features : numpy ndarray
     """
+
     return (x - x.mean(axis=0).reshape(1, -1)) / x.std(axis=0).reshape(1, -1)
 
 def find_category_outliers(x, y):
@@ -50,18 +50,16 @@ def find_category_outliers(x, y):
     for k in range(x.shape[1]):
         to_del = to_del + list(np.where(x[:, k] <= 0)[0])
 
-    x_temp = zscore(x.copy())
+    x_temp = x.copy()
     for k in range(x_temp.shape[1]):
         to_del = to_del + list(np.where(np.abs(x_temp[:, k]) > 4)[0])
 
-
     for yc in ycat:
-        lof = LocalOutlierFactor(novelty=True)
         positions = np.where(np.array(y) == yc)[0]
         x_sub = x[positions]
         x_sub = zscore(x_sub)
-        lof.fit(x_sub)
-        to_del = to_del + list(positions[np.where(lof.predict(x_sub) == -1)[0]])
+        pred = LocalOutlierFactor().fit_predict(x_sub)
+        to_del = to_del + list(positions[np.where(pred == -1)[0]])
     return to_del
 
 def print_classification_scores(Y, YY):
@@ -75,6 +73,8 @@ def print_classification_scores(Y, YY):
 
 def augment_features(x, feature_names=None, feature_indexes=[], operation=None, mutual=False, operation_str = ''):
     """
+    Augments features with entered operations (mutual - between features such as *, /, +, -, ....; non mutual - log, exp, power, ...)
+
     Parameters
     ----------
     x : numpy ndarray
@@ -229,3 +229,5 @@ def replace_annotations(Y, old_key=None, new_key=None):
         else:
             Y_new.append(Y_)
     return np.array(Y_new)
+
+

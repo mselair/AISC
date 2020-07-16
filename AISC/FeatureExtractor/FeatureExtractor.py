@@ -15,16 +15,21 @@ import scipy.signal as signal
 
 from AISC.utils.types import ObjDict
 
-
 class SleepSpectralFeatureExtractor:
-    __version__ = "0.1.1"
+    __version__ = "0.1.2"
     """
     v0.1.0 Updates
     - communication between functions (Pxx, fs, ...) changed to ObjDict - see AISC.types.ObjDict
     - float value frequency bands enabled
     v0.1.1 Updates
     - bands_to_erase as an input into __call__ - erases defined bands of psd
+    v0.1.2 Updates
+    - self._extraction_functions init moved to __init__
     """
+
+    def __init__(self):
+        self._extraction_functions = [self.normalized_entropy, self.MeanFreq, self.MedFreq, self.mean_bands, self.rel_bands, self.normalized_entropy_bands]
+
     @staticmethod
     def _verify_input_fs(item):
         if not isinstance(item, int):
@@ -93,7 +98,6 @@ class SleepSpectralFeatureExtractor:
 
 
     def __call__(self, x=None, fs=None, segm_size=None, fbands=None, datarate=True, n_processes=1, bands_to_erase=[]):
-        self._extraction_functions = [self.normalized_entropy, self.MeanFreq, self.MedFreq, self.mean_bands, self.rel_bands, self.normalized_entropy_bands]
         # Standard parameters
         x = self._verify_input_x(x)
         fs = self._verify_input_fs(fs)
@@ -161,7 +165,7 @@ class SleepSpectralFeatureExtractor:
 
     @staticmethod
     def buffer(x, fs, segm_size):
-        n_segm_size = fs * segm_size
+        n_segm_size = int(round(fs * segm_size))
         residuum = x.shape[0] % n_segm_size
         if residuum > 0:
             x = np.append(x, np.zeros(n_segm_size - residuum))
@@ -173,6 +177,7 @@ class SleepSpectralFeatureExtractor:
             win = np.hamming(xbuffered.shape[1]).reshape(1, -1)
             win = win / win.max()
             xbuffered = xbuffered * win
+
 
         N = xbuffered.shape[1]
         psdx = fft.fft(xbuffered, axis=1)
@@ -326,5 +331,12 @@ class SleepSpectralFeatureExtractor:
             )
             outp_msg.append('SPECTRAL_ENTROPY_' + str(band[0]) + '-' + str(band[1]) + 'Hz')
         return outp_params, outp_msg
+
+
+
+
+
+
+
 
 

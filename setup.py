@@ -49,8 +49,12 @@ setuptools.setup(
         'pandas',
         'scipy',
         'matplotlib',
-        'pymef',
         'scikit-learn',
+        'pytz',
+        'tqdm',
+        'pymef',
+        'pyedflib',
+        'mef_tools'
     ]
 )
 

@@ -13,4 +13,4 @@ AISC.WaveDetector.WDet
    :members:
    :undoc-members:
 
-.. include:: AISC.WaveDetector.README.rs
+.. include:: AISC.WaveDetector.README.rst

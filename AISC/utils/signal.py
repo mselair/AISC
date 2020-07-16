@@ -11,27 +11,20 @@ import scipy.fft as fft
 
 def get_datarate(x):
     """
-    Return the most important thing about a person.
+    Calculates datarate based on NaN values
+
     Parameters
     ----------
-    your_name
-        A string indicating the name of the person.
+    x : numpy ndarray / list
+
+    Returns
+    -------
+    numpy ndarray
+
+    flaot values 0-1 with relative NaN count per signal.
     """
-    #"""
-    #Calculates datarate based on NaN values
-
-    #Parameters
-    #----------
-    #x : numpy ndarray
-
-    #Returns
-    #-------
-   # numpy ndarray
-
-    #flaot values 0-1 with relative NaN count per signal.
-    #"""
     if isinstance(x, np.ndarray):
-        return 1 - (np.isnan(x).sum(axis=1)  / (x.shape[0]))
+        return 1 - (np.isnan(x).sum(axis=1)  / (x.shape[1]))
     else:
         return [1-(np.isnan(x_).sum()/x_.squeeze().shape[0]) for x_ in x]
 
@@ -89,7 +82,7 @@ def decimate(x, fs, fs_new, cutoff=None, datarate=False):
     return x
     # PLOT AMPLITUDE CHAR
     #w, h = signal.freqs(b, a)
-    #w = 0.5 * fs * w / 10
+    #w = 0.5 * fs * w / w.max()
     #plt.semilogx(w, 20 * np.log10(abs(h) / (abs(h)).max()))
     #plt.title('Butterworth filter frequency response')
     #plt.xlabel('Frequency [radians / second]')
@@ -169,14 +162,15 @@ def fft_filter(X, fs, cutoff, type=''):
 
 
 
-
-class LowFrequencyFilterLP:
-    def __init__(self, fs=None, cutoff=None, n_decimate=1, n_order=101, dec_cutoff=0.3):
+class LowFrequencyFilter:
+    __version__ = '0.0.1'
+    def __init__(self, fs=None, cutoff=None, n_decimate=1, n_order=101, dec_cutoff=0.3, filter_type='lp'):
         self.fs = fs
         self.cutoff = cutoff
         self.n_decimate = n_decimate
         self.n_order = n_order
         self.dec_cutoff =dec_cutoff
+        self.filter_type = filter_type
 
         self.n_append = None
 
@@ -208,9 +202,8 @@ class LowFrequencyFilterLP:
         X_up = signal.filtfilt(self.b_dec, self.a_dec, X_up) * 2
         return X_up
 
-    def __call__(self, X):
+    def filter_signal(self, X):
         # append for filter
-        X_orig = X.copy()
         X = np.concatenate((np.zeros(self.n_append), X, np.zeros(self.n_append)), axis=0)
 
         # append to divisible by 2
@@ -227,7 +220,16 @@ class LowFrequencyFilterLP:
         #X = self.upsample(X)
 
         X = X[self.n_append + C : -self.n_append]
-        return X_orig - X
+        return X
+
+
+    def __call__(self, X):
+        # append for filter
+        X_orig = X.copy()
+        X = self.filter_signal(X)
+        if self.filter_type == 'lp': return X
+        if self.filter_type == 'hp': return X_orig - X
+
 
 
 

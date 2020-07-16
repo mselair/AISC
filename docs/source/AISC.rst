@@ -10,9 +10,10 @@ AISC
    :numbered:
 
    AISC.FeatureExtractor
-   AISC.MEF
    AISC.WaveDetector
    AISC.utils
+   AISC.XltekConvertor
+   AISC.XML_parsing
    
 
 ReadmeMe

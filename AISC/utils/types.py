@@ -71,3 +71,19 @@ class ObjDict(dict):
             self.__missing__(item)
         return super().__getattribute__(item)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

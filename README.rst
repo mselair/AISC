@@ -4,7 +4,7 @@
 .. image:: https://readthedocs.org/projects/mselair-aisc/badge/?version=latest
     :target: https://mselair-aisc.readthedocs.io/en/latest/
 
-.. image:: https://img.shields.io/pypi/v/mselair-aisc.svg?maxAge=3600
+.. image:: https://img.shields.io/badge/pypi-0.0.2-orange
     :target: https://pypi.org/project/mselair-aisc/
 
 .. image:: https://img.shields.io/pypi/pyversions/mselair-aisc.svg?longCache=True

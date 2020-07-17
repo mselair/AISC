@@ -54,7 +54,8 @@ setuptools.setup(
         'tqdm',
         'pymef',
         'pyedflib',
-        'mef_tools'
+        'mef_tools',
+        'h5py
     ]
 )
 

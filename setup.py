@@ -55,7 +55,7 @@ setuptools.setup(
         'pymef',
         'pyedflib',
         'mef_tools',
-        'h5py
+        'h5py'
     ]
 )
 

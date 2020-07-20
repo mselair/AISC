@@ -130,7 +130,7 @@ class CyberPSG_XML_Writter:
                 item = idx
 
         self.AnnotationGroups['AnnotationGroup'][item].Element.clear()
-        del CAnnots.AnnotationGroups.AnnotationGroup[item]
+        del self.AnnotationGroups.AnnotationGroup[item]
 
     @property
     def nAnnotationTypes(self):
@@ -172,7 +172,7 @@ class CyberPSG_XML_Writter:
                 raise KeyError('AnnotationType cannot be assigned to an AnnotationGroup \"' + groupAssociationId + '\". Available AnnotationGroups \"' + str(self.AnnotationGroupKeys ))
 
         if isinstance(groupAssociationId, int):
-            group_id = CAnnots.AnnotationGroups.AnnotationGroup[groupAssociationId].id[0].param
+            group_id = self.AnnotationGroups.AnnotationGroup[groupAssociationId].id[0].param
             groupAssociation = AnnotationType.add_child(myXML_GroupAsociations)
             gAID = groupAssociation.add_child(myXML_Id, param=group_id)
 
@@ -185,7 +185,7 @@ class CyberPSG_XML_Writter:
                 item = idx
 
         self.AnnotationTypes.AnnotationType[item].Element.clear()
-        del CAnnots.AnnotationTypes.AnnotationType[item]
+        del self.AnnotationTypes.AnnotationType[item]
 
     @property
     def nAnnotations(self):
@@ -233,7 +233,7 @@ class CyberPSG_XML_Writter:
                 item = idx
 
         self.Annotations.Annotation[item].Element.clear()
-        del CAnnots.Annotations.Annotation[item]
+        del self.Annotations.Annotation[item]
 
     def dump(self, path=None):
         def indent(elem, level=0): # creates new_line and indents in the xml file

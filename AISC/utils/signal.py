@@ -160,10 +160,116 @@ def fft_filter(X, fs, cutoff, type=''):
     X = np.real(fft.ifft(X_new))
     return X
 
+def buffer(x:np.ndarray, fs:float=1, segm_size:float=None, overlap:float = 0, drop:bool=True):
+    """
+    Buffer signal into matrix
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Signal to be
+    fs : float
+        Sampling frequency
+    segm_size : float
+        Segment size in seconds
+    overlap : float
+        Overlap size in seconds
+    drop : bool
+        Drop last segment if True, else append zeros
+    Returns
+    -------
+    buffered_signal : np.ndarray
+    """
+
+    if not isinstance(x, np.ndarray):
+        pass
+    if x.ndim != 1:
+        pass
+
+    if isinstance(segm_size, type(None)):
+        return x
+
+    n_segm = int(round(fs * segm_size))
+    #n_overlap = int(round(fs * overlap))
+    n_shift = int(round(fs * (segm_size - overlap)))
+    idx = 0
+
+    buffered_signal = []
+    while idx+n_segm-n_shift < x.shape[0]:
+        app = x[idx:idx+n_segm]
+        if app.__len__() < n_segm:
+            if drop == False:
+                app = np.append(app, np.zeros(n_segm - app.__len__()))
+            else:
+                idx = 2**30
+                app = None
+
+        if not isinstance(app, type(None)):
+            buffered_signal.append(app)
+        idx += n_shift
+
+    return np.array(buffered_signal)
+
+def PSD(x:np.ndarray, fs:float, nperseg=None, noverlap=0):
+    """
+    Estimates PSD of an input signal or signals using Welch's method.
+    If nperseg is None, the spectrum is estimated from the whole signal in a single window.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        A single signal with a shape (n_samples) or set of signals with a shape (n_signals, n_shapes)
+    fs : float
+        Sampling frequency
+    nperseg : int
+        Number of samples for a segment
+    noverlap : int
+        Number of overlap samples.
+
+    Returns
+    -------
+    freq : np.ndarray
+        Frequency axis for estimated PSD
+    psd : np.ndarray
+        Power spectral density estimate
+
+    """
+    axis = x.ndim-1
+    if isinstance(nperseg, type(None)):
+        nperseg = x.shape[axis]
+
+    freq, psd = signal.welch(
+        x,
+        fs=fs,
+        window='hann',
+        nperseg=nperseg,
+        noverlap=noverlap,
+        nfft=None,
+        detrend='constant',
+        return_onesided=True,
+        scaling='density',
+        axis=axis,
+        average='mean'
+    )
+
+    return freq, psd
+
+
+
+    #N = xbuffered.shape[1]
+    #psdx = fft.fft(xbuffered, axis=1)
+    #psdx = psdx[:, 1:int(np.round(N / 2)) + 1]
+
+    #psdx = (1 / (fs * N)) * np.abs(psdx) ** 2
+    #psdx[np.isinf(psdx)] = np.nan
+    return #psdx
 
 
 class LowFrequencyFilter:
     __version__ = '0.0.1'
+
+    #TODO: implement butterworth filter instead of fir
+
     def __init__(self, fs=None, cutoff=None, n_decimate=1, n_order=101, dec_cutoff=0.3, filter_type='lp'):
         self.fs = fs
         self.cutoff = cutoff
@@ -229,6 +335,7 @@ class LowFrequencyFilter:
         X = self.filter_signal(X)
         if self.filter_type == 'lp': return X
         if self.filter_type == 'hp': return X_orig - X
+
 
 
 

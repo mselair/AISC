@@ -5,10 +5,12 @@ def kl_divergence(mu1, std1, mu2, std2):
     # https://en.wikipedia.org/wiki/Normal_distribution
     return 0.5 * ((std1/std2)**2 + ((mu2-mu1)**2 / std2**2) -1 + 2*np.log(std2/std1))
 
+
 def kl_divergence_mv(mu1, var1, mu2, var2):
     # https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence#Multivariate_normal_distributions
     # https://en.wikipedia.org/wiki/Trace_(linear_algebra)
     return 0.5 * ((np.trace(np.dot(np.linalg.inv(var2), var1))) + np.dot(np.dot((mu2 - mu1), np.linalg.inv(var2)), (mu2-mu1).T) - mu1.shape[1] + np.log(np.linalg.det(var2)/np.linalg.det(var1)))[0, 0]
+
 
 def combine_gauss_distributions(mu1, std1, N1, mu2, std2, N2):
     c1 = N1 / (N1 + N2)

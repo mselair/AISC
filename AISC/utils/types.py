@@ -27,6 +27,7 @@ class ObjDict(dict):
     Dictionary which you can access a) as a dict; b) as a struct with attributes. Can use both foo adding and deleting
     attributes resp items. Inherits from dict
     """
+
     def __init__(self, VT_={}):
         super().__init__(VT_)
         for key in VT_.keys():
@@ -72,18 +73,25 @@ class ObjDict(dict):
         return super().__getattribute__(item)
 
 
+class TwoWayDict(dict):
+    def __init__(self, d=None):
+        if not isinstance(d, type(None)):
+            if isinstance(d, dict):
+                for k, v in d.items():
+                    self[k] = v
 
+    def __setitem__(self, key, value):
+        # Remove any previous connections with these values
+        if key in self:
+            del self[key]
+        if value in self:
+            del self[value]
+        dict.__setitem__(self, key, value)
+        dict.__setitem__(self, value, key)
 
+    def __delitem__(self, key):
+        dict.__delitem__(self, self[key])
+        dict.__delitem__(self, key)
 
-
-
-
-
-
-
-
-
-
-
-
-
+    def __len__(self):
+        return dict.__len__(self) // 2

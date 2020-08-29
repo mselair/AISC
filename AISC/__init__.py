@@ -11,3 +11,9 @@ import os
 # Check windows or linux and sets separator
 if os.name == 'nt': DELIMITER = '\\'
 else: DELIMITER = '/'
+
+
+
+
+
+

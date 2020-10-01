@@ -208,7 +208,7 @@ class SleepSpectralFeatureExtractor:
                 return output
 
     def process_signal(self, x=None, fs=None, segm_size=None, sperwelchseg=None, soverlapwelchseg=0,
-                       fbands=None, bands_to_erase=[], datarate=True):
+                       fbands=None, bands_to_erase=[], datarate=False):
         """
 
         Parameters

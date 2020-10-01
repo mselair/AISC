@@ -8,7 +8,8 @@
 import numpy as np
 import pandas as pd
 from sklearn.neighbors import LocalOutlierFactor
-from sklearn.metrics import f1_score, precision_score, recall_score, confusion_matrix, classification_report, cohen_kappa_score
+from sklearn.metrics import f1_score, precision_score, recall_score, confusion_matrix, classification_report, cohen_kappa_score, accuracy_score
+
 
 def zscore(x):
     """
@@ -62,17 +63,131 @@ def find_category_outliers(x, y):
         to_del = to_del + list(positions[np.where(pred == -1)[0]])
     return to_del
 
-def print_classification_scores(Y, YY):
+def print_classification_scores(Y, YY, N_merge=False):
+    labels = ['AWAKE', 'N2', 'N3', 'REM']
     kappa = cohen_kappa_score(Y, YY)
-    cmat = confusion_matrix(Y, YY)
+    f1 = f1_score(Y, YY, average='weighted')
+    acc = accuracy_score(Y, YY)
+    un_rt_YY = (YY == 'UNKNOWN').sum() / YY.shape[0]
+    un_rt_Y = (Y == 'UNKNOWN').sum() / Y.shape[0]
+    cmat = confusion_matrix(Y, YY, labels=labels)
 
-    print('Kappa-score: {:.2f}'.format(kappa))
-    print(classification_report(Y, YY))
+
+    Y = Y[YY != 'UNKNOWN']
+    YY = YY[YY != 'UNKNOWN']
+
+    YY = YY[Y != 'UNKNOWN']
+    Y = Y[Y != 'UNKNOWN']
+
+
     print('Confusion Matrix:')
     print(cmat)
 
+
+    print('###########')
+    print('All stages')
+    print('Kappa-score: {:.2f}'.format(kappa), ' F1: {:.2f}'.format(f1), ' Accuracy: {:.2f}'.format(acc), ' Unknown rate gold/clf: {:.4f} / {:.4f}'.format(un_rt_Y, un_rt_YY))
+    print(classification_report(Y, YY))
+
+    for state in labels:
+        Y_ = Y.copy()
+        YY_ = YY.copy()
+        Y_[Y_ != state] = 'all'
+        YY_[YY_ != state] = 'all'
+        print(state, ' vs. all - kappa: {:.2f}'.format(cohen_kappa_score(Y_, YY_)), ' F1: {:.2f}'.format(f1_score(Y_, YY_, average='micro')), ' Accuracy: {:.2f}'.format(accuracy_score(Y_, YY_)))
+
+    Y_ = Y.copy()
+    YY_ = YY.copy()
+    Y_ = replace_annotations(Y, old_key=['N2', 'N3'], new_key='N')
+    YY_ = replace_annotations(YY, old_key=['N2', 'N3'], new_key='N')
+    kappa_Nmerged = cohen_kappa_score(Y_, YY_)
+
+    state = 'N'
+    Y_[Y_ != state] = 'all'
+    YY_[YY_ != state] = 'all'
+    print(state, ' vs. all - kappa: {:.2f}'.format(cohen_kappa_score(Y_, YY_)), ' F1: {:.2f}'.format(f1_score(Y_, YY_, average='micro')), ' Accuracy: {:.2f}'.format(accuracy_score(Y_, YY_)))
+    print('Kappa N, merged {:.2f}'.format(kappa_Nmerged))
+
+    if N_merge:
+
+
+        kappa = cohen_kappa_score(Y, YY)
+        f1 = f1_score(Y, YY, average='weighted')
+        acc = accuracy_score(Y, YY)
+        un_rt_YY = (YY == 'UNKNOWN').sum() / YY.shape[0]
+        un_rt_Y = (Y == 'UNKNOWN').sum() / Y.shape[0]
+        cmat = confusion_matrix(Y, YY, labels=labels)
+        labels = ['AWAKE', 'N', 'REM']
+
+        print('###########')
+        print('N - merged')
+        print('Kappa-score: {:.2f}'.format(kappa), ' F1: {:.2f}'.format(f1), ' Accuracy: {:.2f}'.format(acc), ' Unknown rate gold/clf: {:.4f} / {:.4f}'.format(un_rt_Y, un_rt_YY))
+        print(classification_report(Y, YY))
+
+        for state in labels:
+            Y_ = Y.copy()
+            YY_ = YY.copy()
+            Y_[Y_ != state] = 'all'
+            YY_[YY_ != state] = 'all'
+            print(state, ' vs. all - kappa: {:.2f}'.format(cohen_kappa_score(Y_, YY_)), ' F1: {:.2f}'.format(f1_score(Y_, YY_, average='micro')), ' Accuracy: {:.2f}'.format(accuracy_score(Y_, YY_)))
+
+def get_classification_scores(Y, YY, labels=None):
+    if isinstance(labels, type(None)): labels = ['AWAKE', 'N2', 'N3', 'REM']
+    un_rt_YY = (YY == 'UNKNOWN').sum() / YY.shape[0]
+    un_rt_Y = (Y == 'UNKNOWN').sum() / Y.shape[0]
+
+    Y = Y[YY != 'UNKNOWN']
+    YY = YY[YY != 'UNKNOWN']
+
+    YY = YY[Y != 'UNKNOWN']
+    Y = Y[Y != 'UNKNOWN']
+
+
+    kappa = cohen_kappa_score(Y, YY)
+    f1 = f1_score(Y, YY, average='weighted')
+    acc = accuracy_score(Y, YY)
+
+    score = {}
+    score['kappa_all'] = '{:.3f}'.format(kappa)
+    score['f1_all']  = '{:.3f}'.format(f1)
+    score['accuracy_all']  = '{:.3f}'.format(acc)
+    score['unknown'] = '{:.3f}'.format(un_rt_YY)
+
+
+    for state in labels:
+        Y_ = Y.copy()
+        YY_ = YY.copy()
+        Y_[Y_ != state] = 'all'
+        YY_[YY_ != state] = 'all'
+
+
+
+        score['kappa_'+state] = '{:.3f}'.format(cohen_kappa_score(Y_, YY_))
+        score['f1_'+state]  = '{:.3f}'.format(f1_score(Y_, YY_, average='micro'))
+        score['accuracy_'+state]  = '{:.3f}'.format(accuracy_score(Y_, YY_))
+
+    Y_ = replace_annotations(Y, old_key=['N2', 'N3'], new_key='N')
+    YY_ = replace_annotations(YY, old_key=['N2', 'N3'], new_key='N')
+    kappa_Nmerged = cohen_kappa_score(Y_, YY_)
+
+    state = 'N'
+    score['kappa_'+state] = '{:.3f}'.format(cohen_kappa_score(Y_, YY_))
+    score['f1_'+state]  = '{:.3f}'.format(f1_score(Y_, YY_, average='micro'))
+    score['accuracy_'+state]  = '{:.3f}'.format(accuracy_score(Y_, YY_))
+
+    return score
+
+
+
+
+#print('Accuracy ', accuracy_score(Y, old_hypno))
+#print('Unknown: ', (old_hypno == 'UNKNOWN').sum() / old_hypno.shape[0])
+
+
+
 def augment_features(x, feature_names=None, feature_indexes=[], operation=None, mutual=False, operation_str = ''):
     """
+
     Augments features with entered operations (mutual - between features such as *, /, +, -, ....; non mutual - log, exp, power, ...)
 
     Parameters
@@ -229,5 +344,12 @@ def replace_annotations(Y, old_key=None, new_key=None):
         else:
             Y_new.append(Y_)
     return np.array(Y_new)
+
+
+
+
+
+
+
 
 

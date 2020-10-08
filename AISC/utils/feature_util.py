@@ -47,18 +47,14 @@ def find_category_outliers(x, y):
     ycat = np.unique(y)
     to_del = []
 
-    # extreme values
-    for k in range(x.shape[1]):
-        to_del = to_del + list(np.where(x[:, k] <= 0)[0])
-
-    x_temp = x.copy()
-    for k in range(x_temp.shape[1]):
-        to_del = to_del + list(np.where(np.abs(x_temp[:, k]) > 4)[0])
+    #x_temp = x.copy()
+    #for k in range(x_temp.shape[1]):
+    #    to_del = to_del + list(np.where(np.abs(x_temp[:, k]) > 4)[0])
+    x = zscore(x)
 
     for yc in ycat:
         positions = np.where(np.array(y) == yc)[0]
         x_sub = x[positions]
-        x_sub = zscore(x_sub)
         pred = LocalOutlierFactor().fit_predict(x_sub)
         to_del = to_del + list(positions[np.where(pred == -1)[0]])
     return to_del
@@ -209,6 +205,8 @@ def augment_features(x, feature_names=None, feature_indexes=[], operation=None, 
     numpy ndarray -> shape[n_samples, n_features]
 
     """
+    if isinstance(feature_indexes, type(None)):
+        feature_indexes = np.arange(x.shape[1])
 
     if not isinstance(feature_names, type(None)):
         feature_names = list(feature_names)
@@ -241,6 +239,8 @@ def augment_features(x, feature_names=None, feature_indexes=[], operation=None, 
         return x, feature_names
 
     return x
+
+
 
 def remove_features(x, feature_names=None, to_del=None):
     """

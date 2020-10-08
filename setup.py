@@ -52,14 +52,21 @@ setuptools.setup(
         'numpy',
         'pandas',
         'scipy',
-        'matplotlib',
-        'scikit-learn',
-        'pytz',
         'tqdm',
+        'matplotlib',
+        'seaborn',
+        'scikit-learn',
+        'umap-learn',
         'pymef',
-        'pyedflib',
         'mef_tools',
-        'h5py'
+        'pyedflib',
+        'h5py',
+        'sqlalchemy',
+        'PyMySQL',
+        'pytz',
+        'python-dateutil',
+        'pyzmq',
+        'sshtunnel',
     ]
 )
 

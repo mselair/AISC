@@ -9,6 +9,9 @@ from tqdm import tqdm
 from scipy.io import savemat, loadmat
 from scipy.stats import multivariate_normal
 
+
+from sklearn.decomposition import PCA
+
 from sklearn.svm import SVC
 from sklearn.metrics import f1_score, precision_score, recall_score, confusion_matrix, classification_report
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
@@ -293,7 +296,8 @@ class Log10Module:
         return self.transform(X)
 
 
-class PCAModule:
+class PCAModuleSVD:
+
     def __init__(self, var_threshold = 0.98):
         self.var_threshold = var_threshold
 
@@ -320,5 +324,28 @@ class PCAModule:
         return self.transform(X)
 
     def __call__(self, X):
+        return self.transform(X)
+
+
+class PCAModule(PCA):
+    def __init__(self, var_threshold = 0.98):
+        super().__init__()
+        self.var_threshold = var_threshold
+
+    def fit(self, X, y=None):
+        testPCA = PCA()
+        testPCA.fit(X)
+        n = 1
+        vals = testPCA.singular_values_
+        vals = vals / vals.sum()
+        while vals[:n].sum() < self.var_threshold:
+            n += 1
+
+        super().__init__(n_components=n)
+        super().fit(X, y)
+        return self
+
+    def fit_transform(self, X, y=None):
+        self.fit(X, y)
         return self.transform(X)
 

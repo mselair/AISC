@@ -19,6 +19,7 @@ def _convert_to_datetime_utc(x):
     if isinstance(x, (float, int)):
         utc = datetime.utcfromtimestamp(x)
         utc = utc.replace(tzinfo=tz.tzutc())
+
         return utc
     raise TypeError('[TYPE ERROR]: input variable has to be of a type pandas Timestamp, datetime, float, or int. However ' + type(x) + ' recieved.')
 

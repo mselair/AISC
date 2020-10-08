@@ -93,6 +93,21 @@ class MefClient:
             exce = f'{exc}'
             return False, exce, False
 
+
+    def request_data_bulk(self, df):
+        data = []
+        fs = []
+        for row in df.iterrows():
+            row = row[1]
+            outp = self.request_data(row['path'], row['channel'], start=row['start'], stop=row['end'])
+            if not outp[0]:
+                raise AssertionError('[ERROR] Data haven\'t been read \n' + str(row) + ' \n Error Message: ' + str(outp))
+            data += [outp[1]]
+            fs += [outp[2]]
+        return data, fs
+
+
+
     def request_metadata(self, path, passwd=''):
         client = self.client
         for p in self.ports:

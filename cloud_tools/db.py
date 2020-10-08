@@ -13,11 +13,15 @@ import numpy as np
 import pandas as pd
 import sqlalchemy as sqla
 from tqdm import tqdm
+
+from copy import deepcopy
 from sqlalchemy.pool import NullPool
 from sshtunnel import SSHTunnelForwarder
 from cloud_tools._db_connection_variables import *
-from AISC.models import KDEBayesianModel
+from AISC.models import KDEBayesianModel, KDEBayesianCausalModel
 from AISC import __version__ as aisc_version
+from hypnogram.utils import create_day_indexes, time_to_timezone, time_to_timestamp, tile_annotations, create_duration
+
 
 
 class DatabaseHandler:
@@ -124,6 +128,7 @@ class DatabaseHandler:
         self._sql_db_name = name
         self.check_connection()
 
+
 class SessionFinder(DatabaseHandler):
     #TODO: Enable searching for signals between multiple sessions
     __version__ = '0.0.1'
@@ -173,7 +178,8 @@ class SessionFinder(DatabaseHandler):
         self._close_sql()
         return unique_ids['id'].to_list()
 
-class SleepClassificationModelDBHandler (DatabaseHandler):
+class SleepClassificationModelDBHandler(DatabaseHandler):
+
     """Can read and save models from and into DB"""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -195,17 +201,68 @@ class SleepClassificationModelDBHandler (DatabaseHandler):
                 'classifier': pickle.dumps(cls)
             }]
         )
-        df.to_sql('classifier_sleep', con=self._sql_connection, if_exists='append', index=False)
+        df.to_sql('sleep_classifier', con=self._sql_connection, if_exists='append', index=False)
+
         self._sql_connection.close()
 
 
     def load_model(self, patient_id, channel):
         self._sql_connection = self._engine.connect()
-        query = f"SELECT * FROM {self._sql_db_name}.classifier_sleep where patient_id='{patient_id}' and channel='{channel}'"
+
+        query = f"SELECT * FROM {self._sql_db_name}.sleep_classifier where patient_id='{patient_id}' and channel='{channel}'"
+
         df_data = pd.read_sql(query, self._sql_connection)
         self._sql_connection.close()
         cls_string = df_data['classifier'][0]
         print(df_data.keys())
         return pickle.loads(cls_string), df_data.drop(columns='classifier')
+
+
+class SleepDataDBHandler(DatabaseHandler):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def write_data(self, df, patient_id, classifier_id):
+        df = deepcopy(df)
+
+        df['patient_id'] = patient_id
+        df['classifier'] = classifier_id
+
+        if 'annotation' in df.keys():
+            df['sleep_stage'] = df['annotation']
+            df = df.drop(['annotation'], axis=1)
+
+        if 'start' in df.keys():
+            df['start_uutc'] = df['start'] * 1e6
+            df = df.drop(['start'], axis=1)
+
+        if 'end' in df.keys():
+            df['stop_uutc'] = df['end'] * 1e6
+            df = df.drop(['end'], axis=1)
+
+
+        self._sql_connection = self._engine.connect()
+        df.to_sql('sleep_table', con=self._sql_connection, if_exists='append', index=False)
+        self._sql_connection.close()
+
+
+    def get_data(self, patient_id, start, end):
+        start = int(round(start * 1e6))
+        end = int(round(end * 1e6))
+
+        self._sql_connection = self._engine.connect()
+        query = f"SELECT sleep_stage, start_uutc, stop_uutc FROM {self._sql_db_name}.sleep_table where patient_id='{patient_id}' and start_uutc >= '{start}' and start_uutc <= '{end}'"
+        df = pd.read_sql(query, self._sql_connection)
+        self._sql_connection.close()
+
+
+        df['end'] = df['stop_uutc'] / 1e6
+        df = df.drop(['stop_uutc'], axis=1)
+
+        df['start'] = df['start_uutc'] / 1e6
+        df = df.drop(['start_uutc'], axis=1)
+        df = create_duration(df)
+
+        return df
 
 

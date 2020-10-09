@@ -5,8 +5,9 @@ __pycache__/
 *.pyc
 .-*
 /development/
-/main.py
-/train_M1_e12e13.py
-/train_M1_e12e15.py
 *.pyc
 
+/main.py
+/infer_M1_e12e13.py
+/train_M1_e12e13.py
+/train_M1_e12e15.py

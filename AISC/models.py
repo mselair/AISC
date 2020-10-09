@@ -133,7 +133,7 @@ class KDEBayesianModel:
                                [8, 14], # alpha
                                [11, 16], # spindle
                                [14, 20],
-                               [20, 30]], segm_size=30, fs=200, bands_to_erase=None,
+                               [20, 30]], segm_size=30, fs=200, bands_to_erase=[],
                  window_smooth_n=3, window_std=1, cat_bias={'N2': 1, 'REM': 1}
                  ):
 
@@ -158,17 +158,18 @@ class KDEBayesianModel:
         self.FeatureExtractor = SleepSpectralFeatureExtractor()
         self.FeatureExtractor._extraction_functions = \
             [
-                self.FeatureExtractor.MeanFreq,
-                self.FeatureExtractor.MedFreq,
+                #self.FeatureExtractor.MeanFreq,
+                #self.FeatureExtractor.MedFreq,
                 self.FeatureExtractor.rel_bands,
-                self.FeatureExtractor.normalized_entropy,
-                self.FeatureExtractor.normalized_entropy_bands
+                #self.FeatureExtractor.normalized_entropy,
+                #self.FeatureExtractor.normalized_entropy_bands
             ]
 
 
         self.WINDOW = gaussian(window_smooth_n, window_std)
         self.WINDOW = self.WINDOW / self.WINDOW.sum()
         self.CAT_BIAS = cat_bias
+        self.feature_names = None
 
 
     def extract_features(self, signal, return_names=False):
@@ -179,7 +180,7 @@ class KDEBayesianModel:
 
 
         ## Mean band-derived features - delta/beta ratio etc
-        mean_bands, feature_names = self.FeatureExtractor_MeanBand(signal, fbands=self.fbands, fs=self.fs, segm_size=signal.shape[0]/self.fs, datarate=False)
+        mean_bands, feature_names = self.FeatureExtractor_MeanBand(signal, fbands=self.fbands, bands_to_erase=self.bands_to_erase, fs=self.fs, segm_size=signal.shape[0]/self.fs, datarate=False)
         mean_bands = np.concatenate(mean_bands)
 
         functions = [np.divide]
@@ -197,11 +198,15 @@ class KDEBayesianModel:
 
 
         ## other features
-        other_features, feature_names = self.FeatureExtractor(signal, fbands=self.fbands, fs=self.fs, segm_size=signal.shape[0]/self.fs, datarate=False)
-        other_features = np.concatenate(other_features)
+        #other_features, feature_names = self.FeatureExtractor(signal, fbands=self.fbands, bands_to_erase=self.bands_to_erase, fs=self.fs, segm_size=signal.shape[0]/self.fs, datarate=False)
+        #other_features = np.concatenate(other_features)
 
-        features = np.log10(np.append(other_features, mean_band_derived_features))
-        feature_names = feature_names + mean_band_derived_names
+        #features = np.log10(np.append(other_features, mean_band_derived_features))
+        #feature_names = feature_names + mean_band_derived_names
+        features = np.log10(mean_band_derived_features)
+        feature_names = mean_band_derived_names
+
+        self.feature_names = feature_names
         if return_names:
             return features, feature_names
         return features
@@ -215,7 +220,6 @@ class KDEBayesianModel:
         if return_names:
             _, feature_names = self.extract_features(data[k], return_names=True)
             return np.array(x), feature_names
-
         return np.array(x), fs
 
     def fit(self, X, y):
@@ -308,7 +312,7 @@ class KDEBayesianModel:
 
 
 class KDEBayesianCausalModel(KDEBayesianModel):
-    __name__ = "KDEBayesianModel"
+    __name__ = "KDEBayesianCausalModel"
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.MarkovFilter = None

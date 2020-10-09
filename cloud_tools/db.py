@@ -149,7 +149,9 @@ class SessionFinder(DatabaseHandler):
         query = f"SELECT uutc_start, uutc_stop, session, fsamp, channels FROM {self._sql_db_name}.Sessions where id='{patient_id}' and uutc_start<='{uutc_start}' and uutc_stop>='{uutc_stop}' order by uutc_start desc"
         df_data = pd.read_sql(query, self._sql_connection)
         self._sql_connection.close()
-        return df_data.loc[0, 'session']
+
+        if df_data.__len__() > 0:
+            return df_data.loc[0, 'session']
 
     def find_mef_session_bulk(self, patient_id, df):
         sessions = []
@@ -177,6 +179,14 @@ class SessionFinder(DatabaseHandler):
         unique_ids = pd.read_sql(query, self._sql_connection)
         self._close_sql()
         return unique_ids['id'].to_list()
+
+    def data_range(self, patient_id):
+        self._open_sql()
+        query = f"SELECT MIN(uutc_start), MAX(uutc_stop)  FROM {self._sql_db_name}.Sessions where id='{patient_id}'"
+        unique_ids = pd.read_sql(query, self._sql_connection)
+        self._close_sql()
+        return unique_ids.values[0]
+
 
 class SleepClassificationModelDBHandler(DatabaseHandler):
 

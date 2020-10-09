@@ -55,6 +55,9 @@ class SleepSpectralFeatureExtractor:
             - can be replaced with LowFrequencyFilter later on
         - automatic windown implemented in welch method - hann window
     """
+
+    #TODO: Add filtering of the bands for processing - filter before psd for bands in fbands and sum them up
+    #TODO: Add nnft option into PSD - appends zeros - better resolution
     #TODO: move feature extraction functions into FeatureExtractor.SpectralFeatures and call them from the methods
 
     def __init__(self):

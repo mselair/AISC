@@ -273,6 +273,11 @@ class SleepDataDBHandler(DatabaseHandler):
         df = df.drop(['start_uutc'], axis=1)
         df = create_duration(df)
 
+        df['annotation'] = df['sleep_stage']
+        df = df.drop(['sleep_stage'], axis=1)
+
+
+        df = df[['annotation', 'start', 'end', 'duration']]
         return df
 
 

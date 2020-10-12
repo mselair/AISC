@@ -18,7 +18,7 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticD
 from sklearn.metrics import f1_score, precision_score, recall_score, confusion_matrix, classification_report, cohen_kappa_score
 
 from AISC.FeatureExtractor import SleepSpectralFeatureExtractor
-from AISC.utils.feature_util import zscore, augment_features, find_category_outliers, remove_samples, remove_features, balance_classes
+from AISC.utils.feature import zscore, augment_features, find_category_outliers, remove_samples, remove_features, balance_classes
 from AISC.utils.signal import decimate, get_datarate, unify_sampling_frequency
 
 """

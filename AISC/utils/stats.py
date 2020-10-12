@@ -34,3 +34,10 @@ def combine_mvgauss_distributions(mu1, var1, N1, mu2, var2, N2):
         for k2 in range(k1+1, var_combined.shape[0]):
             var_combined[k2, k1] = var_combined[k1, k2]
     return mu_combined, var_combined
+
+
+
+
+
+
+

@@ -19,12 +19,14 @@ from sklearn import preprocessing
 from hypnogram.io import load_CyberPSG
 from hypnogram.utils import create_day_indexes, time_to_utc, time_to_timezone, time_to_timestamp, tile_annotations, create_duration, filter_by_duration, merge_annotations
 
-from AISC.utils.feature_util import augment_features, print_classification_scores
+from AISC.utils.feature import augment_features, print_classification_scores
 from AISC.utils.signal import unify_sampling_frequency, get_datarate, buffer
+from AISC.modules.stats import multivariate_normal_
 from AISC.modules.feature import ZScoreModule, LogModule, FeatureAugmentorModule, Log10Module, PCAModule
 from AISC.FeatureExtractor.FeatureExtractor import SleepSpectralFeatureExtractor
 from scipy.signal import filtfilt, lfilter
 from scipy.signal.windows import gaussian
+
 
 class SleepStageProbabilityMarkovChainFilter:
     def __init__(self, stability=0.8):
@@ -125,7 +127,6 @@ class SleepStageProbabilityMarkovChainFilter:
         self._get_vars()
 
 
-
 class KDEBayesianModel:
     __name__ = "KDEBayesianModel"
     def __init__(self, fbands=[[0.5, 5], # delta
@@ -223,6 +224,10 @@ class KDEBayesianModel:
         return np.array(x), fs
 
     def fit(self, X, y):
+        X, y = self._fit(X, y)
+        self. _fit_kde(X, y)
+
+    def _fit(self, X, y):
         estimator = SVR(kernel="linear")
         self.SELECTOR = RFECV(estimator, step=5, verbose=True, min_features_to_select=1, n_jobs=10)
         self.PCA = PCAModule(var_threshold=0.98)
@@ -239,14 +244,15 @@ class KDEBayesianModel:
         X = self.PCA.fit_transform(X)
         X = self.ZScore.fit_transform(X, y)
         #X = self.UMAP.fit_transform(X)
+        return X, y
 
 
-
+    def _fit_kde(self, X, y):
         self.STATES = np.unique(y)
         self.KDE = []
         for state in self.STATES:
-            x = X[y==state, :]
-            kernel = gaussian_kde(x.T)
+            X_ = X[y==state, :]
+            kernel = gaussian_kde(X_.T)
             self.KDE.append(kernel)
 
     def scores(self, X):
@@ -301,6 +307,7 @@ class KDEBayesianModel:
         df = time_to_utc(df)
         df = merge_annotations(df)
         df = time_to_timestamp(df)
+        df = df[['annotation', 'start', 'end', 'duration']]
         return df
 
     def predict_signal_scores(self, signal, fs, datarate_threshold=0.85):
@@ -308,8 +315,6 @@ class KDEBayesianModel:
         x, fs = self.extract_features_bulk(data, [fs]*data.__len__())
         scores = self.scores(x)
         return scores
-
-
 
 class KDEBayesianCausalModel(KDEBayesianModel):
     __name__ = "KDEBayesianCausalModel"
@@ -326,7 +331,7 @@ class KDEBayesianCausalModel(KDEBayesianModel):
 
 
     def scores(self, X):
-        scores = super().scores(X)
+        scores = self._scores(X)
         state = 'AWAKE'
 
         ch_posts = []
@@ -353,3 +358,18 @@ class KDEBayesianCausalModel(KDEBayesianModel):
     def _scores(self, X):
         return super().scores(X)
 
+class MVGaussBayesianModel(KDEBayesianModel):
+    __name__ = "MVGaussBayesianModel"
+    def _fit_kde(self, X, y):
+        self.STATES = np.unique(y)
+        self.KDE = []
+        for state in self.STATES:
+            X_ = X[y==state, :]
+            #cov = np.cov(X_.T)
+            #mu = X_.mean(axis=0)
+            #kernel = multivariate_normal(mu, cov)
+            kernel = multivariate_normal_(X_.T)
+            self.KDE.append(kernel)
+
+class MVGaussBayesianCausalModel(MVGaussBayesianModel, KDEBayesianCausalModel):
+    __name__ = "MVGaussBayesianModel"

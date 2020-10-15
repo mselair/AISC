@@ -5,5 +5,5 @@
 # LICENSE file in the root directory of this source tree.
 
 import AISC.utils.signal
-import AISC.utils.feature_util
+import AISC.utils.feature
 import AISC.utils.types

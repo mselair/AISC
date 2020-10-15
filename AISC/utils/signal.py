@@ -210,7 +210,7 @@ def buffer(x:np.ndarray, fs:float=1, segm_size:float=None, overlap:float = 0, dr
 
     return np.array(buffered_signal)
 
-def PSD(x:np.ndarray, fs:float, nperseg=None, noverlap=0):
+def PSD(x:np.ndarray, fs:float, nperseg=None, noverlap=0, nfft=None):
     """
     Estimates PSD of an input signal or signals using Welch's method.
     If nperseg is None, the spectrum is estimated from the whole signal in a single window.
@@ -244,7 +244,7 @@ def PSD(x:np.ndarray, fs:float, nperseg=None, noverlap=0):
         window='hann',
         nperseg=nperseg,
         noverlap=noverlap,
-        nfft=None,
+        nfft=nfft,
         detrend='constant',
         return_onesided=True,
         scaling='density',
@@ -267,7 +267,6 @@ def PSD(x:np.ndarray, fs:float, nperseg=None, noverlap=0):
 
 class LowFrequencyFilter:
     __version__ = '0.0.1'
-
     #TODO: implement butterworth filter instead of fir
 
     def __init__(self, fs=None, cutoff=None, n_decimate=1, n_order=101, dec_cutoff=0.3, filter_type='lp'):
@@ -275,7 +274,7 @@ class LowFrequencyFilter:
         self.cutoff = cutoff
         self.n_decimate = n_decimate
         self.n_order = n_order
-        self.dec_cutoff =dec_cutoff
+        self.dec_cutoff = dec_cutoff
         self.filter_type = filter_type
 
         self.n_append = None
@@ -299,10 +298,6 @@ class LowFrequencyFilter:
         return X[::2]
 
     def upsample(self, X):
-        #X_up = np.zeros(X.shape[0] * (2**self.n_decimate))
-        #X_up[::self.n_decimate] = X
-        #X_up = signal.filtfilt(self.b_dec, self.a_dec, X_up) * self.n_decimate
-
         X_up = np.zeros(X.shape[0] * 2)
         X_up[::2] = X
         X_up = signal.filtfilt(self.b_dec, self.a_dec, X_up) * 2
@@ -335,6 +330,7 @@ class LowFrequencyFilter:
         X = self.filter_signal(X)
         if self.filter_type == 'lp': return X
         if self.filter_type == 'hp': return X_orig - X
+
 
 
 

@@ -373,3 +373,5 @@ class MVGaussBayesianModel(KDEBayesianModel):
 
 class MVGaussBayesianCausalModel(MVGaussBayesianModel, KDEBayesianCausalModel):
     __name__ = "MVGaussBayesianModel"
+
+

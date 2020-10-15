@@ -262,7 +262,7 @@ class SleepSpectralFeatureExtractor:
         # filter bands
         if self._filter_bands:
             xbuffered_ = None
-            for b in tqdm(self.FILTERS):
+            for b in self.FILTERS:
                 xbuffered__ = np.apply_along_axis(lambda m: np.convolve(m, b, mode='full'), axis=1, arr=xbuffered)
                 if isinstance(xbuffered_, type(None)): xbuffered_ = xbuffered__
                 else: xbuffered_ += xbuffered__

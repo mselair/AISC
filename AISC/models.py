@@ -24,6 +24,7 @@ from AISC.utils.signal import unify_sampling_frequency, get_datarate, buffer
 from AISC.modules.stats import multivariate_normal_
 from AISC.modules.feature import ZScoreModule, LogModule, FeatureAugmentorModule, Log10Module, PCAModule
 from AISC.FeatureExtractor.FeatureExtractor import SleepSpectralFeatureExtractor
+from AISC.FeatureExtractor.SpectralFeatures import mean_bands
 from scipy.signal import filtfilt, lfilter
 from scipy.signal.windows import gaussian
 
@@ -134,7 +135,7 @@ class KDEBayesianModel:
                                [8, 14], # alpha
                                [11, 16], # spindle
                                [14, 20],
-                               [20, 30]], segm_size=30, fs=200, bands_to_erase=[],
+                               [20, 30]], segm_size=30, fs=200, bands_to_erase=[], filter_bands = True, filter_order=5001, nfft=12000,
                  window_smooth_n=3, window_std=1, cat_bias={'N2': 1, 'REM': 1}
                  ):
 
@@ -142,29 +143,46 @@ class KDEBayesianModel:
         self.segm_size = segm_size
         self.fs = fs
         self.bands_to_erase = bands_to_erase
+        self.filter_bands = filter_bands
+        self.filter_order = filter_order
+        self.nfft=nfft
 
         self.STATES = []
         self.KDE = []
         self.PipelineClustering = None
         self.FeatureSelector = None
 
-        self.FeatureExtractor_MeanBand = SleepSpectralFeatureExtractor()
+        self.FeatureExtractor_MeanBand = SleepSpectralFeatureExtractor(
+            fs=self.fs,
+            segm_size=self.segm_size,
+            fbands=self.fbands,
+            bands_to_erase=self.bands_to_erase,
+            filter_bands=self.filter_bands,
+            nfiltorder=self.filter_order,
+            sperwelchseg=10,
+            soverlapwelchseg=5,
+            nfft=self.nfft,
+            datarate=False
+        )
+
+
+
         self.FeatureExtractor_MeanBand._extraction_functions = \
             [
-                self.FeatureExtractor_MeanBand.mean_bands,
+                mean_bands,
             ]
 
 
 
-        self.FeatureExtractor = SleepSpectralFeatureExtractor()
-        self.FeatureExtractor._extraction_functions = \
-            [
+        #self.FeatureExtractor = SleepSpectralFeatureExtractor(fbands=self.fbands, bands_to_erase=self.bands_to_erase, fs=self.fs, segm_size=self.segm_size, datarate=False)
+        #self.FeatureExtractor._extraction_functions = \
+            #[
                 #self.FeatureExtractor.MeanFreq,
                 #self.FeatureExtractor.MedFreq,
-                self.FeatureExtractor.rel_bands,
+                #self.FeatureExtractor.rel_bands,
                 #self.FeatureExtractor.normalized_entropy,
                 #self.FeatureExtractor.normalized_entropy_bands
-            ]
+            #]
 
 
         self.WINDOW = gaussian(window_smooth_n, window_std)
@@ -181,7 +199,7 @@ class KDEBayesianModel:
 
 
         ## Mean band-derived features - delta/beta ratio etc
-        mean_bands, feature_names = self.FeatureExtractor_MeanBand(signal, fbands=self.fbands, bands_to_erase=self.bands_to_erase, fs=self.fs, segm_size=signal.shape[0]/self.fs, datarate=False)
+        mean_bands, feature_names = self.FeatureExtractor_MeanBand(signal)
         mean_bands = np.concatenate(mean_bands)
 
         functions = [np.divide]

@@ -15,6 +15,7 @@ import sqlalchemy as sqla
 from tqdm import tqdm
 
 from copy import deepcopy
+from datetime import datetime
 from sqlalchemy.pool import NullPool
 from sshtunnel import SSHTunnelForwarder
 from cloud_tools._db_connection_variables import *
@@ -128,7 +129,6 @@ class DatabaseHandler:
         self._sql_db_name = name
         self.check_connection()
 
-
 class SessionFinder(DatabaseHandler):
     #TODO: Enable searching for signals between multiple sessions
     __version__ = '0.0.1'
@@ -187,7 +187,6 @@ class SessionFinder(DatabaseHandler):
         self._close_sql()
         return unique_ids.values[0]
 
-
 class SleepClassificationModelDBHandler(DatabaseHandler):
 
     """Can read and save models from and into DB"""
@@ -227,7 +226,6 @@ class SleepClassificationModelDBHandler(DatabaseHandler):
         print(df_data.keys())
         return pickle.loads(cls_string), df_data.drop(columns='classifier')
 
-
 class SleepDataDBHandler(DatabaseHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -255,7 +253,6 @@ class SleepDataDBHandler(DatabaseHandler):
         df.to_sql('sleep_table', con=self._sql_connection, if_exists='append', index=False)
         self._sql_connection.close()
 
-
     def get_data(self, patient_id, start, end):
         start = int(round(start * 1e6))
         end = int(round(end * 1e6))
@@ -264,7 +261,6 @@ class SleepDataDBHandler(DatabaseHandler):
         query = f"SELECT sleep_stage, start_uutc, stop_uutc FROM {self._sql_db_name}.sleep_table where patient_id='{patient_id}' and start_uutc >= '{start}' and start_uutc <= '{end}'"
         df = pd.read_sql(query, self._sql_connection)
         self._sql_connection.close()
-
 
         df['end'] = df['stop_uutc'] / 1e6
         df = df.drop(['stop_uutc'], axis=1)
@@ -279,5 +275,216 @@ class SleepDataDBHandler(DatabaseHandler):
 
         df = df[['annotation', 'start', 'end', 'duration']]
         return df
+
+class SystemStateLoader(DatabaseHandler):
+
+    def _get_sensing_channels(df, row_idx):
+        det_channels = [df['sense_channel_name_' + str(idx)][row_idx] for idx in range(4)]
+        det_channels = [chan_name.lower() for chan_name in det_channels if isinstance(chan_name, str)]
+        return det_channels
+
+    def _get_stim_channels(df, row_idx):
+        stim_channels = []
+        for idx in range(4):
+            txt = df['current_group_prog' + str(idx) + 'electrodes'][row_idx]
+            if isinstance(txt, str):
+                stim_channels += re.findall(r'e\d{1,2}', txt.lower())
+        return list(np.unique(stim_channels))
+
+    def load_stimulation_info(self, patient_id, start_uutc):
+        self._sql_connection = self._engine.connect()
+        if np.log10(start_uutc) < 10: start_uutc = int(np.round(start_uutc*1e6))
+        query = f"SELECT start_uutc, " \
+                f"curr_Prog0AmpInMilliamps, curr_Prog1AmpInMilliamps, curr_Prog2AmpInMilliamps, curr_Prog3AmpInMilliamps, " \
+                f"curr_program_pulsewidth0, curr_program_pulsewidth1, curr_program_pulsewidth2, curr_program_pulsewidth3, " \
+                f"curr_rate_in_hz" \
+                f" FROM {self.db_name}.System_Status_Processed WHERE patient_id='{patient_id}' and start_uutc<{start_uutc} ORDER BY start_uutc DESC LIMIT 1"
+
+        df_data = pd.read_sql(query, self._sql_connection)
+        self._sql_connection.close()
+
+        if df_data.__len__() > 0:
+            row = df_data.iloc[0]
+            ampl = [row['curr_Prog'+str(k)+'AmpInMilliamps'] for k in range(4) if not isinstance(row['curr_Prog'+str(k)+'AmpInMilliamps'], type(None))]
+
+            freq = row['curr_rate_in_hz']
+            if isinstance(freq, type(None)): freq = 0
+
+            if ampl.__len__() == 0: ampl = 0
+            else: ampl = np.nanmax(ampl)
+
+            pw = [row['curr_program_pulsewidth'+str(k)] for k in range(4) if not isinstance(row['curr_program_pulsewidth'+str(k)], type(None))]
+            if pw.__len__() == 0: pw = 0
+            else: pw = np.nanmax(pw)
+
+            stim_info = {
+                'freq': freq,
+                'ampl': ampl,
+                'pulsewidth': pw
+            }
+            return stim_info
+
+    def load_stimulation_info_bulk(self, patient_id, df):
+        df = time_to_timestamp(deepcopy(df))
+        freq_ = []
+        ampl_ = []
+        pulsewidth_ = []
+
+        self._sql_connection = self._engine.connect()
+
+
+        for row in tqdm(range(df.__len__())):
+            row = df.iloc[row]
+            start_uutc = int(round(row['start'] * 1e6))
+            query = f"SELECT start_uutc, " \
+                    f"curr_Prog0AmpInMilliamps, curr_Prog1AmpInMilliamps, curr_Prog2AmpInMilliamps, curr_Prog3AmpInMilliamps, " \
+                    f"curr_program_pulsewidth0, curr_program_pulsewidth1, curr_program_pulsewidth2, curr_program_pulsewidth3, " \
+                    f"curr_rate_in_hz" \
+                    f" FROM {self.db_name}.System_Status_Processed WHERE patient_id='{patient_id}' and start_uutc<{start_uutc} ORDER BY start_uutc DESC LIMIT 1"
+
+            df_outp = pd.read_sql(query, self._sql_connection)
+
+            if df_outp.__len__() > 0:
+                row = df_outp.iloc[0]
+                ampl = [row['curr_Prog'+str(k)+'AmpInMilliamps'] for k in range(4) if not isinstance(row['curr_Prog'+str(k)+'AmpInMilliamps'], type(None))]
+
+                if ampl.__len__() == 0: ampl = 0
+                else: ampl = np.nanmax(ampl)
+
+                freq = row['curr_rate_in_hz']
+                if isinstance(freq, type(None)): freq = 0
+
+
+                pw = [row['curr_program_pulsewidth'+str(k)] for k in range(4) if not isinstance(row['curr_program_pulsewidth'+str(k)], type(None))]
+                if pw.__len__() == 0: pw = 0
+                else: pw = np.nanmax(pw)
+
+            else:
+                freq = ampl = pw = None
+
+
+            freq_.append(freq)
+            ampl_.append(ampl)
+            pulsewidth_.append(pw)
+
+
+        self._sql_connection.close()
+        df['freq'] = freq_
+        df['ampl'] = ampl_
+        df['pulsewidth'] = pulsewidth_
+        return df
+
+class ScientificDataLoader(DatabaseHandler):
+    def get_impedance_min_max(self, patient_id=None, start_timestamp=None, stop_timestamp=None):
+        if isinstance(start_timestamp, type(None)):
+            start_timestamp = 0
+        if isinstance(stop_timestamp, type(None)):
+            stop_timestamp = datetime.now().timestamp()
+
+        start_timestamp *= 1e6
+        stop_timestamp *= 1e6
+
+        query = f"SELECT MIN(start_uutc), MAX(stop_uutc)" \
+                f" FROM {self._sql_db_name}.Impedance where patient_id='{patient_id}' " \
+                f"and start_uutc>={start_timestamp} " \
+                f"and stop_uutc<={stop_timestamp}"
+        self._open_sql()
+        min_max = pd.read_sql(query, self._sql_connection)
+        self._close_sql()
+        if not isinstance(min_max.iloc[0]['MIN(start_uutc)'], type(None)):
+            min_max = [min_max.iloc[0]['MIN(start_uutc)'] / 1e6, min_max.iloc[0]['MAX(stop_uutc)'] / 1e6]
+            return min_max
+        else:
+            return None
+
+    def get_impedance_data(self, patient_id=None, start_timestamp=None, stop_timestamp=None):
+        if isinstance(start_timestamp, type(None)):
+            start_timestamp = 0
+        if isinstance(stop_timestamp, type(None)):
+            stop_timestamp = datetime.now().timestamp()
+
+        start_timestamp *= 1e6
+        stop_timestamp *= 1e6
+
+        query = f"SELECT " \
+                f"start_uutc, " \
+                f"el_0, el_1, el_2, el_3, el_4, el_5, el_6, el_7, el_8, el_9, el_10, el_11, el_12, el_13, el_14, el_15 " \
+                f"FROM {self._sql_db_name}.Impedance WHERE patient_id='{str(patient_id)}' " \
+                f"and start_uutc>={start_timestamp} " \
+                f"and stop_uutc<={stop_timestamp}"
+        self._open_sql()
+        df = pd.read_sql(query, self._sql_connection)
+        self._close_sql()
+        df['start_uutc'] /= 1e6
+        return df
+
+    ############ Spike ##################
+    def get_spike_rate_channels(self, patient_id=None, start_timestamp=None, stop_timestamp=None):
+        if isinstance(start_timestamp, type(None)):
+            start_timestamp = 0
+        if isinstance(stop_timestamp, type(None)):
+            stop_timestamp = datetime.now().timestamp()
+
+        start_timestamp *= 1e6
+        stop_timestamp *= 1e6
+
+        self._open_sql()
+        query = f"SELECT DISTINCT channel " \
+                f"FROM {self._sql_db_name}.Automated_Events WHERE id='{str(patient_id)}' " \
+                f"and ev_type='spike_rate' " \
+                f"and start_uutc>={start_timestamp} " \
+                f"and start_uutc<={stop_timestamp}"
+        df = pd.read_sql(query, self._sql_connection)
+        self._close_sql()
+        list_of_channels = np.array(df['channel'].unique())
+        channels_by_location = {}
+        for ch in list_of_channels:
+            loc = self._get_channel_location(ch)
+            if not loc in channels_by_location.keys():
+                channels_by_location[loc] = []
+            channels_by_location[loc].append(ch)
+        return channels_by_location
+
+    def get_spike_rate_data(self, patient_id=None, channel=None, start_timestamp=None, stop_timestamp=None):
+        if isinstance(start_timestamp, type(None)):
+            start_timestamp = 0
+        if isinstance(stop_timestamp, type(None)):
+            stop_timestamp = datetime.now().timestamp()
+
+        start_timestamp *= 1e6
+        stop_timestamp *= 1e6
+
+        query = f"SELECT " \
+                f"start_uutc, value  " \
+                f"FROM {self._sql_db_name}.Automated_Events WHERE id='{str(patient_id)}' " \
+                f"and channel='{channel}' " \
+                f"and start_uutc>={start_timestamp} " \
+                f"and start_uutc<={stop_timestamp}"
+        self._open_sql()
+        df = pd.read_sql(query, self._sql_connection)
+        self._close_sql()
+        df['start_uutc'] /= 1e6
+        df['start_uutc'] += 10*60
+        return df
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

@@ -3,6 +3,8 @@ from pandas._libs.tslibs.timestamps import Timestamp
 from dateutil import tz
 import pandas as pd
 import numpy as np
+from copy import deepcopy
+from tqdm import tqdm
 
 
 def _convert_to_timestamp(x):
@@ -148,6 +150,7 @@ def merge_annotations(df):
         new_df.loc[new_df.__len__() - 1, 'duration'] = (new_df.loc[new_df.__len__() - 1, 'end'] - new_df.loc[new_df.__len__() - 1, 'start']).seconds
     return new_df
 
+'''
 def tile_annotations(dfAnnotations, dur_threshold):
     """
 
@@ -193,6 +196,46 @@ def tile_annotations(dfAnnotations, dur_threshold):
                 )
             annotation_idx += 1
     return dfAnnotations
+'''
+
+
+def tile_row(row, dur_threshold):
+    outp = []
+    start_time = row['start']
+    end_time = row['end']
+    curr_time = row['start']
+    delta = timedelta(seconds=dur_threshold)
+
+    for idx in range(int(np.ceil(row['duration']/dur_threshold))):
+        row_ = row.copy(deep=True)
+        row_['start'] = curr_time
+        curr_time += delta
+        row_['end'] = curr_time
+        row_['duration'] = (row_['end'] - row_['start']).seconds
+        outp += [row_]
+
+    outp[-1]['end'] = end_time
+    outp[-1]['duration'] = (outp[-1]['end'] - outp[-1]['start']).seconds
+    return outp
+
+
+def tile_annotations(df, dur_threshold):
+    if not isinstance(df, pd.DataFrame):
+        raise AssertionError('[INPUT ERROR]: Variable dfAnnotations must be of type pandas.DataFrame.')
+
+    if not isinstance(dur_threshold, (int, float)):
+        raise AssertionError(
+            '[INPUT ERROR]: dur_threshold must be float or int format giving the maximum duration of a single annotation. All anotations above this duration threshold will be tiled.')
+
+    if np.isnan(dur_threshold) or np.isinf(dur_threshold) or dur_threshold <= 0:
+        raise AssertionError('[INPUT ERROR]: dur_threshold must be a valid number bigger than 0, not nan and not inf')
+
+    outp = []
+    for row in tqdm(list(df.iterrows())):
+        row = row[1]
+        outp += tile_row(row, dur_threshold)
+    return pd.DataFrame(outp).reset_index(drop=True)
+
 
 def filter_by_duration(dfAnnotations, duration):
     if not isinstance(dfAnnotations, pd.DataFrame):

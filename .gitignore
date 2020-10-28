@@ -11,3 +11,15 @@ __pycache__/
 /infer_M1_e12e13.py
 /train_M1_e12e13.py
 /train_M1_e12e15.py
+/train_D651_e4e7.py
+/train_R950_e12e15.py
+/train_T571_e9e11.py
+/infer_T571_e13e15.py
+/compare_D651_T571.py
+/paper_ieee_classificator.py
+/R950_analysis.py
+/T571_analysis.py
+/YouSnoozeYouWin.py
+/MSEL_01796.py
+/M1_analysis.py
+/D651_analysis.py

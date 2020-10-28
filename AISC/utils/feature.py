@@ -90,18 +90,18 @@ def print_classification_scores(Y, YY, N_merge=False):
         YY_ = YY.copy()
         Y_[Y_ != state] = 'all'
         YY_[YY_ != state] = 'all'
-        print(state, ' vs. all - kappa: {:.2f}'.format(cohen_kappa_score(Y_, YY_)), ' F1: {:.2f}'.format(f1_score(Y_, YY_, average='micro')), ' Accuracy: {:.2f}'.format(accuracy_score(Y_, YY_)))
+        print(state, ' vs. all - kappa: {:.2f}'.format(cohen_kappa_score(Y_, YY_)), ' F1: {:.2f}'.format(f1_score(Y_==state, YY_==state, average='micro')), ' Accuracy: {:.2f}'.format(accuracy_score(Y_, YY_)))
 
     Y_ = Y.copy()
     YY_ = YY.copy()
-    Y_ = replace_annotations(Y, old_key=['N2', 'N3'], new_key='N')
-    YY_ = replace_annotations(YY, old_key=['N2', 'N3'], new_key='N')
+    Y_ = replace_annotations(Y_, old_key=['N2', 'N3'], new_key='N')
+    YY_ = replace_annotations(YY_, old_key=['N2', 'N3'], new_key='N')
     kappa_Nmerged = cohen_kappa_score(Y_, YY_)
 
     state = 'N'
     Y_[Y_ != state] = 'all'
     YY_[YY_ != state] = 'all'
-    print(state, ' vs. all - kappa: {:.2f}'.format(cohen_kappa_score(Y_, YY_)), ' F1: {:.2f}'.format(f1_score(Y_, YY_, average='micro')), ' Accuracy: {:.2f}'.format(accuracy_score(Y_, YY_)))
+    print(state, ' vs. all - kappa: {:.2f}'.format(cohen_kappa_score(Y_, YY_)), ' F1: {:.2f}'.format(f1_score(Y_=='N', YY_=='N', average='micro')), ' Accuracy: {:.2f}'.format(accuracy_score(Y_, YY_)))
     print('Kappa N, merged {:.2f}'.format(kappa_Nmerged))
 
     if N_merge:
@@ -121,11 +121,10 @@ def print_classification_scores(Y, YY, N_merge=False):
         print(classification_report(Y, YY))
 
         for state in labels:
-            Y_ = Y.copy()
-            YY_ = YY.copy()
-            Y_[Y_ != state] = 'all'
-            YY_[YY_ != state] = 'all'
-            print(state, ' vs. all - kappa: {:.2f}'.format(cohen_kappa_score(Y_, YY_)), ' F1: {:.2f}'.format(f1_score(Y_, YY_, average='micro')), ' Accuracy: {:.2f}'.format(accuracy_score(Y_, YY_)))
+            print(state, ' vs. all - kappa: {:.2f}'.format(cohen_kappa_score(Y_, YY_)), ' F1: {:.2f}'.format(f1_score(Y_==state, YY_==state, average='binary')), ' Accuracy: {:.2f}'.format(accuracy_score(Y_, YY_)))
+
+
+
 
 def get_classification_scores(Y, YY, labels=None):
     if isinstance(labels, type(None)): labels = ['AWAKE', 'N2', 'N3', 'REM']
@@ -155,11 +154,8 @@ def get_classification_scores(Y, YY, labels=None):
         YY_ = YY.copy()
         Y_[Y_ != state] = 'all'
         YY_[YY_ != state] = 'all'
-
-
-
         score['kappa_'+state] = '{:.3f}'.format(cohen_kappa_score(Y_, YY_))
-        score['f1_'+state]  = '{:.3f}'.format(f1_score(Y_, YY_, average='micro'))
+        score['f1_'+state]  = '{:.3f}'.format(f1_score(Y_==state, YY_==state, average='binary'))
         score['accuracy_'+state]  = '{:.3f}'.format(accuracy_score(Y_, YY_))
 
     Y_ = replace_annotations(Y, old_key=['N2', 'N3'], new_key='N')
@@ -168,9 +164,8 @@ def get_classification_scores(Y, YY, labels=None):
 
     state = 'N'
     score['kappa_'+state] = '{:.3f}'.format(cohen_kappa_score(Y_, YY_))
-    score['f1_'+state]  = '{:.3f}'.format(f1_score(Y_, YY_, average='micro'))
+    score['f1_'+state]  = '{:.3f}'.format(f1_score(Y_=='N', YY_=='N', average='weighted'))
     score['accuracy_'+state]  = '{:.3f}'.format(accuracy_score(Y_, YY_))
-
     return score
 
 

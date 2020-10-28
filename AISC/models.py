@@ -17,8 +17,7 @@ from sklearn.svm import SVR
 from sklearn import preprocessing
 
 from hypnogram.io import load_CyberPSG
-from hypnogram.utils import create_day_indexes, time_to_utc, time_to_timezone, time_to_timestamp, tile_annotations, create_duration, filter_by_duration, merge_annotations
-
+from hypnogram.utils import create_day_indexes, time_to_timezone, time_to_timestamp, tile_annotations, create_duration, filter_by_duration, time_to_utc, merge_annotations
 from AISC.utils.feature import augment_features, print_classification_scores
 from AISC.utils.signal import unify_sampling_frequency, get_datarate, buffer
 from AISC.modules.stats import multivariate_normal_
@@ -55,7 +54,6 @@ class SleepStageProbabilityMarkovChainFilter:
         for cl in self.STATES:
             if cl not in classes: self.remove_class(cl)
         self.correct_certainty(class_certainty)
-
 
 
     def _get_vars(self):
@@ -232,7 +230,7 @@ class KDEBayesianModel:
 
     def extract_features_bulk(self, list_of_signals, fsamp_list, return_names=False):
         data = list_of_signals
-        data, fs = unify_sampling_frequency(data, sampling_frequency=fsamp_list, fs_new=200)
+        data, fs = unify_sampling_frequency(data, sampling_frequency=fsamp_list, fs_new=self.fs)
         x = []
         for k in tqdm(range(data.__len__())):
             x += [self.extract_features(data[k])]
@@ -247,7 +245,7 @@ class KDEBayesianModel:
 
     def _fit(self, X, y):
         estimator = SVR(kernel="linear")
-        self.SELECTOR = RFECV(estimator, step=5, verbose=True, min_features_to_select=1, n_jobs=10)
+        self.SELECTOR = RFECV(estimator, step=5, verbose=True, min_features_to_select=4, n_jobs=10)
         self.PCA = PCAModule(var_threshold=0.98)
         self.ZScore = ZScoreModule(trainable=True, continuous_learning=False, multi_class=False)
         #self.UMAP = UMAP(n_neighbors=30, min_dist=1,

@@ -8,6 +8,7 @@ from io import StringIO
 import xml.etree.ElementTree as ET
 import os
 from hypnogram.CyberPSG import CyberPSGFile, CyberPSG_XML_Writter
+from hypnogram.NSRR import NSRRSleepFile
 from hypnogram.utils import time_to_utc
 import pandas as pd
 
@@ -19,8 +20,14 @@ _hypnogram_colors = {
     'N1': '#2bc7c4',  # 2b7cc7
     'N2': '#2b5dc7',
     'N3': '#000000',
-    'UNKNOWN': '#eaeded'
+    'UNKNOWN': '#eaeded',
+    'C_N2Huijie_1154_19_07_04': '#FF548ED5',
+    'C_AWAKEHuijie_1154_19_07_04': '#FFFFFF00',
+    'C_REMHuijie_1154_19_07_04': '#FF7030A0'
 }
+
+
+
 
 def load_CyberPSG(path):
     if not os.path.isfile(path):
@@ -48,7 +55,8 @@ def save_CyberPSG(path, df):
         fid.add_Annotation(row['start'], row['end'], AnnotationTypeId=row['annotation'])
     fid.dump()
 
-
+def load_NSRR(path):
+    return NSRRSleepFile(path).get_hypnogram()
 
 
 

@@ -125,7 +125,6 @@ class SleepStageProbabilityMarkovChainFilter:
         self.STATES = self.STATES[self.STATES != class_name]
         self._get_vars()
 
-
 class KDEBayesianModel:
     __name__ = "KDEBayesianModel"
     def __init__(self, fbands=[[0.5, 5], # delta

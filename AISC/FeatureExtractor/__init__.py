@@ -7,6 +7,9 @@
 
 from .FeatureExtractor import SleepSpectralFeatureExtractor
 
+import AISC.FeatureExtractor.BivariateFeatures
+import AISC.FeatureExtractor.SpectralFeatures
+import AISC.FeatureExtractor.TimeDomainFeatures
 
 
 

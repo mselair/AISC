@@ -186,6 +186,11 @@ class SessionFinder(DatabaseHandler):
         unique_ids = pd.read_sql(query, self._sql_connection)
         self._close_sql()
         return unique_ids.values[0]
+# Copyright 2020-present, Mayo Clinic Department of Neurology
+# All rights reserved.
+#
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
 
 class SleepClassificationModelDBHandler(DatabaseHandler):
 

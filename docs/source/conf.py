@@ -13,7 +13,9 @@
 import os
 import sys
 #sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath('/mnt/Hydrogen/filip/2020/MSEL_AIR/AISC'))
+#sys.path.insert(0, os.path.abspath('/mnt/Hydrogen/filip/2020/MSEL_AIR/AISC'))
+sys.path.insert(0, os.path.abspath('/Users/m220339/PycharmProjects/mselair'))
+#sys.path.insert(0, os.path.abspath('/Users/m220339/PycharmProjects/mselair/AISC'))
 
 try:
     if os.environ['DEVDIR']:

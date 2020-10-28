@@ -11,14 +11,8 @@ AISC
 
    AISC.FeatureExtractor
    AISC.WaveDetector
+   AISC.modules
    AISC.utils
-   
-
-ReadmeMe
-===========
-.. include:: AISC.README.rst
+   AISC.models
 
 
-LICENSE
-=========
-.. include:: ../../LICENSE

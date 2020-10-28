@@ -52,3 +52,6 @@ Example
     print('delta_t Stats')
     print(stats['delta_t_stats'])
 
+
+.. image:: ../../images/1_det.png
+   :width: 600

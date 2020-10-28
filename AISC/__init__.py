@@ -14,6 +14,11 @@ if os.name == 'nt': DELIMITER = '\\'
 else: DELIMITER = '/'
 
 
+import AISC.FeatureExtractor
+import AISC.WaveDetector
+import AISC.models
+import AISC.modules
+import AISC.utils
 
 
 

@@ -21,7 +21,6 @@ def DicToObj(d):
             setattr(top, i, j)
     return top
 
-
 class ObjDict(dict):
     """
     Dictionary which you can access a) as a dict; b) as a struct with attributes. Can use both foo adding and deleting
@@ -71,7 +70,6 @@ class ObjDict(dict):
         if not item in self.__dir__():
             self.__missing__(item)
         return super().__getattribute__(item)
-
 
 class TwoWayDict(dict):
     def __init__(self, d=None):

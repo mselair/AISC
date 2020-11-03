@@ -15,6 +15,7 @@ class NSRRSleepFile:
         'Stage 1 sleep|1': 'N1',
         'Stage 2 sleep|2': 'N2',
         'Stage 3 sleep|3': 'N3',
+        'Stage 4 sleep|4': 'N3',
         'REM sleep|5': 'REM'
     }):
         self.namespaces = TwoWayDict() # list of namespaces - key=prefix; value=uri

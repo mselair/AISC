@@ -54,4 +54,4 @@ Example
 
 
 .. image:: ../../images/1_det.png
-   :width: 600
+   :width: 300

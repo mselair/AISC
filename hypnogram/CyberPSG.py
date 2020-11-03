@@ -82,11 +82,6 @@ class CyberPSGFile:
         self.parse_namespaces(path_xml)
         self.Element = ET.parse(path_xml).getroot()
 
-    def get_annotations(self):
-        annotationTypes = {}
-        #for
-
-
     def get_annotation_types(self):
         types = {}
         for Element in self.Element:
@@ -96,6 +91,7 @@ class CyberPSGFile:
                 for AnnotationTypeElement in Element:
                     name = None
                     id = None
+                    electrode = None
                     for SubElement in AnnotationTypeElement:
                         subtag = SubElement.tag
                         if '}' in subtag: subtag = subtag.split('}')[-1]
@@ -127,6 +123,7 @@ class CyberPSGFile:
                         if subtag == 'annotationTypeId':  annot['annotationTypeId'] = types[types[SubElement.text]]
                         if subtag == 'startTimeUtc':  annot['startTimeUtc'] = SubElement.text
                         if subtag == 'endTimeUtc':  annot['endTimeUtc'] = SubElement.text
+                        if subtag == 'channelName': annot['channel'] = SubElement.text
                     annotations += [annot]
         return annotations
 
@@ -168,6 +165,7 @@ class CyberPSGFile:
                             utc = datetime.strptime(s, frmt)
                             utc = utc.replace(tzinfo=tz.tzutc())
                             annot['end'] = utc
+                        if subtag == 'channelName': annot['channel'] = SubElement.text
                     annotations += [annot]
         return annotations
 

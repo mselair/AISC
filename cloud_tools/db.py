@@ -13,7 +13,6 @@ import numpy as np
 import pandas as pd
 import sqlalchemy as sqla
 from tqdm import tqdm
-
 from copy import deepcopy
 from datetime import datetime
 from sqlalchemy.pool import NullPool
@@ -186,11 +185,6 @@ class SessionFinder(DatabaseHandler):
         unique_ids = pd.read_sql(query, self._sql_connection)
         self._close_sql()
         return unique_ids.values[0]
-# Copyright 2020-present, Mayo Clinic Department of Neurology
-# All rights reserved.
-#
-# This source code is licensed under the license found in the
-# LICENSE file in the root directory of this source tree.
 
 class SleepClassificationModelDBHandler(DatabaseHandler):
 
@@ -378,6 +372,50 @@ class SystemStateLoader(DatabaseHandler):
         df['ampl'] = ampl_
         df['pulsewidth'] = pulsewidth_
         return df
+
+    def load_stimulation_day_info(self, patient_id, start_uutc, stop_uutc):
+        self._sql_connection = self._engine.connect()
+        if np.log10(start_uutc) < 10: start_uutc = int(np.round(start_uutc*1e6))
+        if np.log10(stop_uutc) < 10: stop_uutc = int(np.round(stop_uutc*1e6))
+
+        query = f"SELECT start_uutc, " \
+                f"curr_Prog0AmpInMilliamps, curr_Prog1AmpInMilliamps, curr_Prog2AmpInMilliamps, curr_Prog3AmpInMilliamps, " \
+                f"curr_program_pulsewidth0, curr_program_pulsewidth1, curr_program_pulsewidth2, curr_program_pulsewidth3, " \
+                f"curr_rate_in_hz" \
+                f" FROM {self.db_name}.System_Status_Processed WHERE patient_id='{patient_id}' and start_uutc>{start_uutc} and start_uutc<{stop_uutc}"
+
+        df_data = pd.read_sql(query, self._sql_connection)
+        self._sql_connection.close()
+
+        freqs = []
+        ampls = []
+        pws = []
+        for row in df_data.iterrows():
+            row = row[1]
+            ampl = [row['curr_Prog'+str(k)+'AmpInMilliamps'] for k in range(4) if not isinstance(row['curr_Prog'+str(k)+'AmpInMilliamps'], type(None))]
+
+            freq = row['curr_rate_in_hz']
+            if isinstance(freq, type(None)): freq = 0
+
+            if ampl.__len__() == 0: ampl = 0
+            else: ampl = np.nanmax(ampl)
+
+            pw = [row['curr_program_pulsewidth'+str(k)] for k in range(4) if not isinstance(row['curr_program_pulsewidth'+str(k)], type(None))]
+            if pw.__len__() == 0: pw = 0
+            else: pw = np.nanmax(pw)
+            freqs += [freq]
+            ampls += [ampl]
+            pws += [pw]
+
+        if freqs.__len__() == 0: freqs = None
+        if ampls.__len__() == 0: ampls = None
+        if pws.__len__() == 0: pws = None
+        stim_info = {
+            'freq': np.max(freqs),
+            'ampl': np.max(ampls),
+            'pulsewidth': np.max(pws)
+        }
+        return stim_info
 
 class ScientificDataLoader(DatabaseHandler):
     def get_impedance_min_max(self, patient_id=None, start_timestamp=None, stop_timestamp=None):
